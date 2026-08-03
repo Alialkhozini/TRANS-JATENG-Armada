@@ -89,22 +89,22 @@
           <!-- Pure SVG Chart -->
           <svg v-else class="svg-chart" viewBox="0 0 600 320">
             <!-- Grids & Guidelines -->
-            <line x1="50" y1="50" x2="560" y2="50" stroke="rgba(255,255,255,0.05)" />
-            <line x1="50" y1="100" x2="560" y2="100" stroke="rgba(255,255,255,0.05)" />
-            <line x1="50" y1="150" x2="560" y2="150" stroke="rgba(255,255,255,0.05)" />
-            <line x1="50" y1="200" x2="560" y2="200" stroke="rgba(255,255,255,0.05)" />
-            <line x1="50" y1="250" x2="560" y2="250" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+            <line x1="50" y1="50" x2="560" y2="50" stroke="var(--border-glass)" stroke-dasharray="4,4" />
+            <line x1="50" y1="100" x2="560" y2="100" stroke="var(--border-glass)" stroke-dasharray="4,4" />
+            <line x1="50" y1="150" x2="560" y2="150" stroke="var(--border-glass)" stroke-dasharray="4,4" />
+            <line x1="50" y1="200" x2="560" y2="200" stroke="var(--border-glass)" stroke-dasharray="4,4" />
+            <line x1="50" y1="250" x2="560" y2="250" stroke="var(--border-glass)" stroke-width="1.5" />
 
             <!-- Y Axis Label -->
-            <text x="40" y="55" fill="var(--text-muted)" font-size="10" text-anchor="end">{{ Math.round(maxChartVal) }}</text>
-            <text x="40" y="155" fill="var(--text-muted)" font-size="10" text-anchor="end">{{ Math.round(maxChartVal / 2) }}</text>
-            <text x="40" y="255" fill="var(--text-muted)" font-size="10" text-anchor="end">0</text>
+            <text x="40" y="54" fill="var(--text-secondary)" font-size="10" font-weight="500" text-anchor="end">{{ Math.round(maxChartVal) }}</text>
+            <text x="40" y="154" fill="var(--text-secondary)" font-size="10" font-weight="500" text-anchor="end">{{ Math.round(maxChartVal / 2) }}</text>
+            <text x="40" y="254" fill="var(--text-secondary)" font-size="10" font-weight="500" text-anchor="end">0</text>
 
             <!-- Bar Gradient Definition -->
             <defs>
               <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="var(--primary)" />
-                <stop offset="100%" stop-color="var(--accent)" />
+                <stop offset="0%" stop-color="#f97316" />
+                <stop offset="100%" stop-color="#fbbf24" />
               </linearGradient>
             </defs>
 
@@ -123,13 +123,13 @@
                 <title>{{ monthNames[idx] }}: {{ count }} Laporan</title>
               </rect>
               
-              <!-- Value Text -->
+              <!-- Value Text (Adapts to Light/Dark background via text-primary) -->
               <text 
                 v-if="count > 0"
                 :x="69 + idx * 42" 
-                :y="242 - getBarHeight(count)" 
-                fill="#fff" 
-                font-size="10" 
+                :y="240 - getBarHeight(count)" 
+                class="chart-val-text"
+                font-size="11" 
                 font-weight="bold"
                 text-anchor="middle"
               >
@@ -139,9 +139,10 @@
               <!-- Month X Label -->
               <text 
                 :x="69 + idx * 42" 
-                y="270" 
+                y="272" 
                 fill="var(--text-secondary)" 
                 font-size="10" 
+                font-weight="500"
                 text-anchor="middle"
               >
                 {{ monthNamesShort[idx] }}
@@ -416,26 +417,47 @@ const generatePDFReport = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 250px;
-  background: rgba(9, 13, 22, 0.4);
+  min-height: 280px;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.02), transparent);
+  pointer-events: none;
 }
 .no-chart-data {
   color: var(--text-muted);
+  font-size: 0.9rem;
 }
 .svg-chart {
   width: 100%;
   max-width: 550px;
   height: auto;
+  z-index: 1;
 }
 .chart-bar {
-  transition: opacity var(--transition-fast);
+  transition: all var(--transition-fast) ease;
   cursor: pointer;
 }
 .chart-bar:hover {
-  opacity: 0.85;
+  fill: #f97316;
+  filter: drop-shadow(0 2px 6px rgba(249, 115, 22, 0.4));
+}
+.chart-val-text {
+  fill: var(--text-primary);
+  font-family: var(--font-sans);
 }
 
 .col-span-2 {
