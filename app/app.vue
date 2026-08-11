@@ -134,7 +134,7 @@ main {
   margin-top: 4rem;
   transition: background-color var(--transition-normal);
 }
-.footer-container p {
+.footer-container p { 
   color: var(--text-muted);
   font-size: 0.85rem;
 }

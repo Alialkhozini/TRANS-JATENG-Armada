@@ -19,9 +19,9 @@
           />
         </div>
         <p v-if="authError" class="error-text text-sm mb-4">❌ PIN salah. Silakan coba lagi.</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Portal</button>
+        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
-      <NuxtLink to="/" class="btn btn-secondary btn-sm w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
     </div>
 
     <!-- Active Tasks Screen -->

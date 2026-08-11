@@ -563,6 +563,14 @@ body.light {
   animation: fadeInUp 0.25s ease-out;
 }
 
+/* Utilities */
+.w-full {
+  width: 100%;
+}
+.mt-4 {
+  margin-top: 1rem;
+}
+
 /* Responsive Menu Toggle for Mobile Navbar */
 .menu-toggle-btn {
   display: none;

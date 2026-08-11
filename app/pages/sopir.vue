@@ -1,27 +1,26 @@
 <template>
   <div class="container fade-in-up">
-    <!-- PIN Auth Screen -->
+    <!-- Auth Screen -->
     <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🔒</div>
+      <div class="lock-icon">🚌</div>
       <h2 class="auth-title">Akses Portal Sopir</h2>
-      <p class="auth-desc">Masukkan PIN Sopir untuk mengakses form laporan kerusakan.</p>
+      <p class="auth-desc">Masukkan kode akses untuk membuka form laporan kerusakan.</p>
       
       <form @submit.prevent="verifyPIN" class="auth-form">
         <div class="form-group">
           <input 
             v-model="pinInput" 
-            type="password" 
+            type="text" 
             class="form-control text-center" 
-            placeholder="Ketik PIN (Default: 1111)" 
-            maxlength="4" 
+            placeholder="Masukkan kode akses" 
             required 
             ref="pinInputRef"
           />
         </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ PIN salah. Silakan coba lagi.</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Portal</button>
+        <p v-if="authError" class="error-text text-sm mb-4">❌ Kode akses salah atau tidak valid.</p>
+        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
-      <NuxtLink to="/" class="btn btn-secondary btn-sm w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
     </div>
 
     <!-- Main Form Screen -->
@@ -63,7 +62,8 @@
                 type="text" 
                 id="noArmada" 
                 class="form-control" 
-                placeholder="Contoh: TJ-045" 
+                placeholder="Otomatis terisi" 
+                readonly
                 required 
               />
             </div>
@@ -162,13 +162,29 @@ const pinInput = ref('')
 const authError = ref(false)
 const pinInputRef = ref(null)
 
+// Helper to validate hull number from "lambung 01" to "lambung 14" (or just 1 to 14)
+const validateLambung = (input) => {
+  const cleaned = input.trim().toLowerCase()
+  // Match "lambung 01" to "lambung 14", "lambung 1" to "lambung 14", "lambung-01", "lambung01", "01" to "14", etc.
+  const match = cleaned.match(/^(?:lambung\s*|lambung-?)?(0?[1-9]|1[0-4])$/)
+  if (match) {
+    return parseInt(match[1], 10)
+  }
+  return null
+}
+
 const verifyPIN = () => {
-  if (pinInput.value === '1111') {
+  const lambungNum = validateLambung(pinInput.value)
+  if (lambungNum !== null) {
     isAuthenticated.value = true
     authError.value = false
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('transjateng_sopir_authed', 'true')
+      sessionStorage.setItem('transjateng_sopir_lambung', lambungNum.toString())
     }
+    // Auto-fill armada number
+    form.no_armada = `TJ-${String(lambungNum).padStart(3, '0')}`
+    pinInput.value = ''
   } else {
     authError.value = true
     pinInput.value = ''
@@ -179,7 +195,16 @@ const logout = () => {
   isAuthenticated.value = false
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('transjateng_sopir_authed')
+    sessionStorage.removeItem('transjateng_sopir_lambung')
   }
+  // Reset Form
+  form.nama_sopir = ''
+  form.no_armada = ''
+  form.tanggal_kerusakan = getTodayDateString()
+  form.deskripsi = ''
+  imageFile.value = null
+  previewUrl.value = null
+  compressionStats.value = ''
 }
 
 // Set default date to today
@@ -204,6 +229,10 @@ onMounted(() => {
     const isAuthed = sessionStorage.getItem('transjateng_sopir_authed')
     if (isAuthed === 'true') {
       isAuthenticated.value = true
+      const lambung = sessionStorage.getItem('transjateng_sopir_lambung')
+      if (lambung) {
+        form.no_armada = `TJ-${String(lambung).padStart(3, '0')}`
+      }
     } else {
       setTimeout(() => {
         pinInputRef.value?.focus()
@@ -329,7 +358,12 @@ const handleSubmit = async () => {
     
     // Reset Form
     form.nama_sopir = ''
-    form.no_armada = ''
+    const lambung = sessionStorage.getItem('transjateng_sopir_lambung')
+    if (lambung) {
+      form.no_armada = `TJ-${String(lambung).padStart(3, '0')}`
+    } else {
+      form.no_armada = ''
+    }
     form.tanggal_kerusakan = getTodayDateString()
     form.deskripsi = ''
     imageFile.value = null
@@ -351,6 +385,11 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+.form-control[readonly] {
+  background-color: var(--border-glass);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
 .lock-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
