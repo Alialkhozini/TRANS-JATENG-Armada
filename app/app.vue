@@ -68,9 +68,11 @@ const isLightTheme = ref(false)
 onMounted(() => {
   if (typeof window !== 'undefined') {
     const savedTheme = localStorage.getItem('transjateng_theme')
-    const userPrefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
     
-    if (savedTheme === 'light' || (!savedTheme && userPrefersLight)) {
+    // Default to 'light' theme if no preference is saved yet
+    const isLight = savedTheme === 'light' || !savedTheme
+    
+    if (isLight) {
       document.documentElement.classList.add('light')
       isLightTheme.value = true
     } else {
