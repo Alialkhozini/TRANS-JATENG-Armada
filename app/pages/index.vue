@@ -5,7 +5,7 @@
       <div class="hero-logo-wrapper">
         <img src="https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg" alt="Trans Jateng Logo Logo" class="hero-logo" />
       </div>
-      <h1 class="hero-title">Sistem Pelacakan Kerusakan & Perbaikan Armada</h1>
+      <h1 class="hero-title">Sistem Pelaporan Kerusakan & Perbaikan Armada</h1>
       <p class="hero-desc">
         Solusi terintegrasi untuk mendokumentasikan kerusakan bus Trans Jateng secara terstruktur. Menggantikan tumpukan pesan WhatsApp dengan database terpusat yang terpantau secara real-time.
       </p>
@@ -106,7 +106,7 @@
       <div class="tracker-header">
         <div class="tracker-header-left">
           <span class="pulse-indicator"></span>
-          <h3 class="tracker-title">Pelacakan Aktivitas Laporan Terbaru</h3>
+          <h3 class="tracker-title">Aktivitas Laporan Terbaru</h3>
         </div>
         <button @click="loadRecentReports" class="refresh-btn" :disabled="isLoading">
           {{ isLoading ? '🔄' : 'Refresh' }}
@@ -217,7 +217,7 @@ const { fetchReports } = useReports()
 useHead({
   title: 'Trans Jateng Armada - Sistem Laporan Kerusakan',
   meta: [
-    { name: 'description', content: 'Sistem pelacakan dan pelaporan kerusakan armada bus Trans Jateng terintegrasi.' }
+    { name: 'description', content: 'Sistem pelaporan dan perbaikan kerusakan armada bus Trans Jateng terintegrasi.' }
   ]
 })
 

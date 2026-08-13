@@ -50,7 +50,7 @@
     <!-- Footer -->
     <footer class="app-footer">
       <div class="footer-container">
-        <p>&copy; 2026 Trans Jateng Armada. Sistem Pelaporan & Pelacakan Kerusakan Armada.</p>
+        <p>&copy; 2026 Trans Jateng Armada. Sistem Pelaporan & Perbaikan Kerusakan Armada.</p>
       </div>
     </footer>
   </div>
