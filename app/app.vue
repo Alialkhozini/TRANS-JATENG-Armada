@@ -20,7 +20,7 @@
             <li><NuxtLink to="/sopir" class="navbar-link" @click="isMobileMenuOpen = false">Sopir</NuxtLink></li>
             <li><NuxtLink to="/operasional" class="navbar-link" @click="isMobileMenuOpen = false">Operasional</NuxtLink></li>
             <li><NuxtLink to="/mekanik" class="navbar-link" @click="isMobileMenuOpen = false">Mekanik</NuxtLink></li>
-            <li><NuxtLink to="/rekap" class="navbar-link" @click="isMobileMenuOpen = false">Rekap & Laporan</NuxtLink></li>
+            <li><NuxtLink to="/admin" class="navbar-link" @click="isMobileMenuOpen = false">Admin</NuxtLink></li>
           </ul>
 
           <!-- Theme Toggle Switch -->

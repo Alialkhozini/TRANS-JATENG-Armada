@@ -20,6 +20,14 @@ export interface Laporan {
   waktu_selesai?: string
 }
 
+export interface User {
+  id: string
+  username: string
+  pin: string
+  role: 'Admin' | 'Operasional' | 'Mekanik'
+  created_at: string
+}
+
 export const useReports = () => {
   const config = useRuntimeConfig()
   const url = config.public.supabaseUrl
@@ -42,61 +50,187 @@ export const useReports = () => {
     return hari[date.getDay()]
   }
 
+  // --- IMPLEMENTASI MOCK USER ---
+  const getMockUsers = (): User[] => {
+    if (typeof window === 'undefined') return []
+
+    // One-time migration to clear old users from localStorage
+    if (!localStorage.getItem('transjateng_users_cleared_daryanto')) {
+      localStorage.removeItem('transjateng_users')
+      localStorage.setItem('transjateng_users_cleared_daryanto', 'true')
+    }
+
+    const saved = localStorage.getItem('transjateng_users')
+    if (saved) {
+      return JSON.parse(saved)
+    }
+    const defaultUsers: User[] = [
+      { id: 'USR-1', username: 'admin', pin: '9999', role: 'Admin', created_at: new Date().toISOString() },
+      { id: 'USR-2', username: 'wardana', pin: '1234', role: 'Operasional', created_at: new Date().toISOString() },
+      { id: 'USR-3', username: 'aris', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
+      { id: 'USR-4', username: 'daryanto', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
+      { id: 'USR-5', username: 'indra', pin: '1234', role: 'Operasional', created_at: new Date().toISOString() },
+    ]
+    localStorage.setItem('transjateng_users', JSON.stringify(defaultUsers))
+    return defaultUsers
+  }
+
+  const saveMockUsers = (users: User[]) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('transjateng_users', JSON.stringify(users))
+    }
+  }
+
+  const fetchUsers = async (): Promise<User[]> => {
+    if (isMock.value) {
+      return getMockUsers()
+    }
+    try {
+      const { data, error } = await supabase
+        .from('pengguna')
+        .select('*')
+        .order('username', { ascending: true })
+      if (error) throw error
+      return data || []
+    } catch (err) {
+      console.warn('Error fetching users from Supabase, falling back to mock:', err)
+      return getMockUsers()
+    }
+  }
+
+  const createUser = async (user: Omit<User, 'id' | 'created_at'>) => {
+    const newUser: User = {
+      ...user,
+      id: `USR-${Date.now()}`,
+      created_at: new Date().toISOString()
+    }
+    if (isMock.value) {
+      const list = getMockUsers()
+      if (list.some(u => u.username.toLowerCase() === user.username.toLowerCase())) {
+        throw new Error('Username sudah digunakan.')
+      }
+      list.push(newUser)
+      saveMockUsers(list)
+      return newUser
+    }
+    try {
+      const { data, error } = await supabase
+        .from('pengguna')
+        .insert([newUser])
+        .select()
+      if (error) throw error
+      return data?.[0] || newUser
+    } catch (err) {
+      console.error('Failed to create user in Supabase:', err)
+      throw err
+    }
+  }
+
+  const updateUser = async (id: string, updates: Partial<User>) => {
+    if (isMock.value) {
+      const list = getMockUsers()
+      const index = list.findIndex(u => u.id === id)
+      if (index !== -1) {
+        if (updates.username && list.some(u => u.id !== id && u.username.toLowerCase() === updates.username.toLowerCase())) {
+          throw new Error('Username sudah digunakan.')
+        }
+        list[index] = { ...list[index], ...updates } as User
+        saveMockUsers(list)
+      }
+      return list[index]
+    }
+    try {
+      const { data, error } = await supabase
+        .from('pengguna')
+        .update(updates)
+        .eq('id', id)
+        .select()
+      if (error) throw error
+      return data?.[0] || null
+    } catch (err) {
+      console.error(`Failed to update user ${id}:`, err)
+      throw err
+    }
+  }
+
+  const deleteUser = async (id: string) => {
+    if (isMock.value) {
+      const list = getMockUsers()
+      const filtered = list.filter(u => u.id !== id)
+      saveMockUsers(filtered)
+      return true
+    }
+    try {
+      const { error } = await supabase
+        .from('pengguna')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      return true
+    } catch (err) {
+      console.error(`Failed to delete user ${id}:`, err)
+      throw err
+    }
+  }
+
+  const authenticateUser = async (username: string, pin: string, role?: string): Promise<User | null> => {
+    const cleanUsername = username.trim().toLowerCase()
+    const cleanPin = pin.trim()
+
+    if (isMock.value) {
+      const list = getMockUsers()
+      const found = list.find(u =>
+        u.username.toLowerCase() === cleanUsername &&
+        u.pin === cleanPin &&
+        (!role || u.role === role)
+      )
+      return found || null
+    }
+
+    try {
+      let query = supabase
+        .from('pengguna')
+        .select('*')
+        .eq('username', username)
+        .eq('pin', pin)
+      if (role) {
+        query = query.eq('role', role)
+      }
+      const { data, error } = await query
+      if (error) throw error
+      if (data && data.length > 0) {
+        return data[0]
+      }
+      return null
+    } catch (err) {
+      console.warn('Error authenticating from Supabase, falling back to mock:', err)
+      const list = getMockUsers()
+      const found = list.find(u =>
+        u.username.toLowerCase() === cleanUsername &&
+        u.pin === cleanPin &&
+        (!role || u.role === role)
+      )
+      return found || null
+    }
+  }
+
   // --- IMPLEMENTASI MOCK (LOCALSTORAGE) ---
   const getMockReports = (): Laporan[] => {
     if (typeof window === 'undefined') return []
+    
+    // One-time migration to drop old mock dummy reports
+    if (!localStorage.getItem('transjateng_reports_dropped_dummy_v3')) {
+      localStorage.removeItem('transjateng_reports')
+      localStorage.setItem('transjateng_reports_dropped_dummy_v3', 'true')
+    }
+
     const saved = localStorage.getItem('transjateng_reports')
     if (saved) {
       return JSON.parse(saved)
     }
-    // Data dummy awal agar tampilan tidak kosong saat pertama kali dicoba
-    const dummy: Laporan[] = [
-      {
-        id: 'LP-1712123456000',
-        timestamp_lapor: new Date(Date.now() - 3600000 * 24 * 3).toISOString(), // 3 hari lalu
-        tanggal_kerusakan: new Date(Date.now() - 3600000 * 24 * 3).toISOString().split('T')[0],
-        hari_kerusakan: getHariIndo(new Date(Date.now() - 3600000 * 24 * 3).toISOString().split('T')[0]),
-        tahun_kerusakan: new Date().getFullYear(),
-        no_armada: 'TJ-042',
-        nama_sopir: 'Budiono Siregar',
-        deskripsi: 'AC bagian belakang kurang dingin, penumpang mengeluh kepanasan selama perjalanan.',
-        foto_sebelum: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=400',
-        status: 'Menunggu Verifikasi'
-      },
-      {
-        id: 'LP-1712123488000',
-        timestamp_lapor: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
-        tanggal_kerusakan: new Date(Date.now() - 3600000 * 24 * 5).toISOString().split('T')[0],
-        hari_kerusakan: getHariIndo(new Date(Date.now() - 3600000 * 24 * 5).toISOString().split('T')[0]),
-        tahun_kerusakan: new Date().getFullYear(),
-        no_armada: 'TJ-015',
-        nama_sopir: 'Agus Setiawan',
-        deskripsi: 'Lampu utama sebelah kiri mati total, berbahaya jika jalan malam hari.',
-        foto_sebelum: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400',
-        status: 'Diproses',
-        nama_mekanik: 'Hendro'
-      },
-      {
-        id: 'LP-1712123511000',
-        timestamp_lapor: new Date(Date.now() - 3600000 * 24 * 8).toISOString(),
-        tanggal_kerusakan: new Date(Date.now() - 3600000 * 24 * 8).toISOString().split('T')[0],
-        hari_kerusakan: getHariIndo(new Date(Date.now() - 3600000 * 24 * 8).toISOString().split('T')[0]),
-        tahun_kerusakan: new Date().getFullYear(),
-        no_armada: 'TJ-088',
-        nama_sopir: 'Joko Widodo',
-        deskripsi: 'Rem berbunyi derit keras saat pedal rem diinjak.',
-        foto_sebelum: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=400',
-        status: 'Selesai',
-        nama_mekanik: 'Hendro',
-        foto_pasca_penanganan: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=400',
-        keterangan_pasca_penanganan: 'Pengecekan awal kampas rem, sudah sangat tipis.',
-        foto_hasil_perbaikan: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=400',
-        keterangan_hasil_perbaikan: 'Mengganti kampas rem depan kiri & kanan dengan part baru. Rem sudah senyap dan pakem.',
-        waktu_selesai: new Date(Date.now() - 3600000 * 24 * 7).toISOString()
-      }
-    ]
-    localStorage.setItem('transjateng_reports', JSON.stringify(dummy))
-    return dummy
+    const defaultReports: Laporan[] = []
+    localStorage.setItem('transjateng_reports', JSON.stringify(defaultReports))
+    return defaultReports
   }
 
   const saveMockReports = (reports: Laporan[]) => {
@@ -112,13 +246,13 @@ export const useReports = () => {
     if (isMock.value) {
       return getMockReports()
     }
-    
+
     try {
       const { data, error } = await supabase
         .from('laporan')
         .select('*')
         .order('timestamp_lapor', { ascending: false })
-      
+
       if (error) throw error
       return data || []
     } catch (err) {
@@ -134,7 +268,7 @@ export const useReports = () => {
     const timestamp_lapor = new Date().toISOString()
     const hari_kerusakan = getHariIndo(report.tanggal_kerusakan)
     const tahun_kerusakan = new Date(report.tanggal_kerusakan).getFullYear()
-    
+
     const newReport: Laporan = {
       ...report,
       id,
@@ -148,7 +282,6 @@ export const useReports = () => {
       const list = getMockReports()
       list.unshift(newReport)
       saveMockReports(list)
-      // Kirim Telegram Notif (jika terkonfigurasi di server, biarpun mock tetap bisa)
       triggerTelegramNotification(newReport).catch(console.error)
       return newReport
     }
@@ -158,12 +291,11 @@ export const useReports = () => {
         .from('laporan')
         .insert([newReport])
         .select()
-      
+
       if (error) throw error
-      
-      // Kirim Notifikasi Telegram
+
       triggerTelegramNotification(newReport).catch(console.error)
-      
+
       return data?.[0] || newReport
     } catch (err) {
       console.error('Failed to create report in Supabase:', err)
@@ -189,7 +321,7 @@ export const useReports = () => {
         .update(updates)
         .eq('id', id)
         .select()
-      
+
       if (error) throw error
       return data?.[0] || null
     } catch (err) {
@@ -198,39 +330,55 @@ export const useReports = () => {
     }
   }
 
-  // Upload Foto ke Supabase Storage (atau return Base64 jika Mock)
+  // Upload Foto ke Cloudinary (Prioritas) atau Supabase Storage (atau return Base64 jika Mock)
   const uploadPhoto = async (file: File): Promise<string> => {
-    if (isMock.value) {
-      // Mock: ubah file menjadi dataUrl base64 untuk penyimpanan lokal
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onloadend = () => resolve(reader.result as string)
-        reader.onerror = reject
-        reader.readAsDataURL(file)
-      })
-    }
-
+    // 1. Coba upload via Cloudinary Server Route terlebih dahulu jika di-deploy / diaktifkan
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`
-      const filePath = `reports/${fileName}`
-
-      const { data, error } = await supabase.storage
-        .from('armada-photos')
-        .upload(filePath, file)
-
-      if (error) throw error
-
-      // Dapatkan URL Publik
-      const { data: { publicUrl } } = supabase.storage
-        .from('armada-photos')
-        .getPublicUrl(filePath)
-
-      return publicUrl
-    } catch (err) {
-      console.error('Failed to upload file to Supabase Storage:', err)
-      throw err
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response: any = await $fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      if (response && response.url) {
+        return response.url
+      }
+    } catch (cloudinaryErr) {
+      console.warn('Cloudinary upload not active or failed, trying fallback storage:', cloudinaryErr)
     }
+
+    // 2. Fallback ke Supabase Storage jika bukan mode Mock
+    if (!isMock.value) {
+      try {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+        const filePath = `reports/${fileName}`
+
+        const { data, error } = await supabase.storage
+          .from('armada-photos')
+          .upload(filePath, file)
+
+        if (error) throw error
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('armada-photos')
+          .getPublicUrl(filePath)
+
+        return publicUrl
+      } catch (err) {
+        console.error('Failed to upload file to Supabase Storage:', err)
+        throw err
+      }
+    }
+
+    // 3. Fallback terakhir ke Base64 (untuk mode Mock / Pengembangan Lokal)
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
   }
 
   // Memicu Notifikasi Telegram melalui Server Route
@@ -241,7 +389,6 @@ export const useReports = () => {
         body: report
       })
     } catch (err) {
-      // Abaikan error di sisi UI agar user tidak melihat error notifikasi
       console.warn('Telegram notification failed:', err)
     }
   }
@@ -252,6 +399,11 @@ export const useReports = () => {
     createReport,
     updateReport,
     uploadPhoto,
-    getHariIndo
+    getHariIndo,
+    fetchUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    authenticateUser
   }
 }

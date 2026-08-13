@@ -28,12 +28,12 @@
       <!-- Header -->
       <div class="page-header">
         <div>
-          <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Portal</NuxtLink>
+          <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
           <h1 class="page-title">Lapor Kerusakan Armada</h1>
           <p class="page-subtitle">Silakan isi formulir di bawah ini untuk melaporkan kerusakan armada bus.</p>
         </div>
         <div class="header-actions">
-          <button @click="logout" class="btn btn-secondary btn-sm">Keluar 🔓</button>
+          <button @click="logout" class="btn btn-danger btn-sm">Keluar</button>
         </div>
       </div>
 

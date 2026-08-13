@@ -2,23 +2,31 @@
   <div class="container fade-in-up">
     <!-- PIN Auth Screen -->
     <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🔒</div>
+      <div class="lock-icon">🔧</div>
       <h2 class="auth-title">Akses Portal Mekanik</h2>
-      <p class="auth-desc">Masukkan PIN Mekanik untuk mengakses daftar tugas perbaikan.</p>
+      <p class="auth-desc">Masukkan username dan PIN untuk melihat tugas perbaikan Anda.</p>
       
       <form @submit.prevent="verifyPIN" class="auth-form">
         <div class="form-group">
           <input 
+            v-model="usernameInput" 
+            type="text" 
+            class="form-control text-center" 
+            placeholder="Username Mekanik" 
+            required 
+          />
+        </div>
+        <div class="form-group mt-3">
+          <input 
             v-model="pinInput" 
             type="password" 
             class="form-control text-center" 
-            placeholder="Ketik PIN (Default: 2222)" 
-            maxlength="4" 
+            placeholder="Ketik PIN" 
             required 
             ref="pinInputRef"
           />
         </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ PIN salah. Silakan coba lagi.</p>
+        <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
         <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
       <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
@@ -33,21 +41,23 @@
           <p class="page-subtitle">Daftar perbaikan aktif dan penanganan armada bus yang sedang diproses oleh tim mekanik.</p>
         </div>
         <div class="header-actions">
-          <button @click="logout" class="btn btn-secondary btn-sm">Keluar 🔓</button>
+          <button @click="logout" class="btn btn-danger btn-sm">Keluar</button>
         </div>
       </div>
 
-      <!-- Search Name Input -->
-      <div class="card mb-6 p-4">
-        <div class="form-group mb-0">
-          <label class="form-label" for="cariMekanik">🔍 Cari Berdasarkan Nama Mekanik</label>
+      <!-- Search Input -->
+      <div class="search-bar-container mb-6">
+        <div class="search-input-wrapper">
           <input 
             v-model="searchQuery" 
             type="text" 
-            id="cariMekanik" 
-            class="form-control" 
-            placeholder="Ketik nama mekanik untuk menyaring tugas (misal: Hendro). Kosongkan untuk melihat semua." 
+            id="cariTugas" 
+            class="search-input" 
+            placeholder="Cari tugas perbaikan..." 
           />
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
       </div>
 
@@ -73,7 +83,8 @@
           </div>
         </div>
         <button @click="loadTasks" class="btn btn-secondary btn-sm" :disabled="isLoading">
-          🔄 {{ isLoading ? 'Memuat...' : 'Segarkan Tugas' }}
+          <span :class="{ 'spin-animation': isLoading }" style="display: inline-block; margin-right: 4px;">🔄</span>
+          {{ isLoading ? 'Memuat...' : 'Segarkan Tugas' }}
         </button>
       </div>
 
@@ -241,7 +252,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useReports } from '~/composables/useReports'
 
-const { fetchReports, updateReport, uploadPhoto } = useReports()
+const { fetchReports, updateReport, uploadPhoto, authenticateUser } = useReports()
 
 useHead({
   title: 'Portal Mekanik - Trans Jateng',
@@ -252,19 +263,30 @@ useHead({
 
 // Authentication State
 const isAuthenticated = ref(false)
+const usernameInput = ref('')
 const pinInput = ref('')
 const authError = ref(false)
 const pinInputRef = ref(null)
+const loggedInName = ref('')
 
-const verifyPIN = () => {
-  if (pinInput.value === '2222') {
-    isAuthenticated.value = true
-    authError.value = false
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('transjateng_mekanik_authed', 'true')
+const verifyPIN = async () => {
+  try {
+    const user = await authenticateUser(usernameInput.value, pinInput.value, 'Mekanik')
+    if (user) {
+      isAuthenticated.value = true
+      authError.value = false
+      loggedInName.value = user.username
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('transjateng_mekanik_authed', 'true')
+        sessionStorage.setItem('transjateng_mekanik_nama', user.username)
+      }
+      loadTasks()
+    } else {
+      authError.value = true
+      pinInput.value = ''
     }
-    loadTasks()
-  } else {
+  } catch (err) {
+    console.error(err)
     authError.value = true
     pinInput.value = ''
   }
@@ -272,8 +294,12 @@ const verifyPIN = () => {
 
 const logout = () => {
   isAuthenticated.value = false
+  loggedInName.value = ''
+  usernameInput.value = ''
+  pinInput.value = ''
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('transjateng_mekanik_authed')
+    sessionStorage.removeItem('transjateng_mekanik_nama')
   }
 }
 
@@ -310,6 +336,7 @@ onMounted(() => {
     const isAuthed = sessionStorage.getItem('transjateng_mekanik_authed')
     if (isAuthed === 'true') {
       isAuthenticated.value = true
+      loggedInName.value = sessionStorage.getItem('transjateng_mekanik_nama') || ''
       loadTasks()
     } else {
       setTimeout(() => {
@@ -321,6 +348,8 @@ onMounted(() => {
 
 const loadTasks = async () => {
   isLoading.value = true
+  // Artificial delay 600ms for a satisfying loading visual effect
+  await new Promise(resolve => setTimeout(resolve, 600))
   try {
     const all = await fetchReports()
     
@@ -353,18 +382,23 @@ const loadTasks = async () => {
 // Filter list based on status tab and name search query
 const filteredTasks = computed(() => {
   let list = tasks.value.filter(t => t.status === activeStatusFilter.value)
+  if (loggedInName.value) {
+    list = list.filter(t => t.nama_mekanik && t.nama_mekanik.toLowerCase() === loggedInName.value.toLowerCase())
+  }
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase()
-    list = list.filter(t => t.nama_mekanik && t.nama_mekanik.toLowerCase().includes(query))
+    list = list.filter(t => 
+      (t.no_armada && t.no_armada.toLowerCase().includes(query)) ||
+      (t.deskripsi && t.deskripsi.toLowerCase().includes(query))
+    )
   }
   return list
 })
 
 const historyCount = computed(() => {
   let list = tasks.value.filter(t => t.status === 'Selesai')
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase()
-    list = list.filter(t => t.nama_mekanik && t.nama_mekanik.toLowerCase().includes(query))
+  if (loggedInName.value) {
+    list = list.filter(t => t.nama_mekanik && t.nama_mekanik.toLowerCase() === loggedInName.value.toLowerCase())
   }
   return list.length
 })
@@ -847,5 +881,81 @@ const formatDateWithTime = (dateStr) => {
     width: 100%;
     text-align: center;
   }
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .filter-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  .chip-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chip-container::-webkit-scrollbar {
+    display: none;
+  }
+  .chip-btn {
+    flex-shrink: 0;
+  }
+}
+
+.spin-animation {
+  animation: spin-icon 1s linear infinite;
+}
+@keyframes spin-icon {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Rounded Pill Search Bar */
+.search-bar-container {
+  width: 100%;
+}
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.search-input {
+  width: 100%;
+  padding: 0.85rem 3rem 0.85rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-glass);
+  border-radius: 9999px;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.search-icon {
+  position: absolute;
+  right: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+  opacity: 0.7;
+  transition: var(--transition-fast);
+}
+.search-input:focus + .search-icon {
+  color: var(--primary);
+  opacity: 1;
 }
 </style>

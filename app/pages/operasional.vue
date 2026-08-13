@@ -4,21 +4,29 @@
     <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
       <div class="lock-icon">🔒</div>
       <h2 class="auth-title">Akses Khusus Operasional</h2>
-      <p class="auth-desc">Masukkan Kode PIN Operasional untuk mengakses halaman ini.</p>
+      <p class="auth-desc">Masukkan username dan PIN Operasional untuk mengakses halaman ini.</p>
       
       <form @submit.prevent="verifyPIN" class="auth-form">
         <div class="form-group">
           <input 
+            v-model="usernameInput" 
+            type="text" 
+            class="form-control text-center" 
+            placeholder="Username Operasional" 
+            required 
+          />
+        </div>
+        <div class="form-group mt-3">
+          <input 
             v-model="pinInput" 
             type="password" 
             class="form-control text-center" 
-            placeholder="Ketik PIN (Default: 1234)" 
-            maxlength="4" 
+            placeholder="Ketik PIN" 
             required 
             ref="pinInputRef"
           />
         </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ PIN salah. Silakan coba lagi.</p>
+        <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
         <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
       <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
@@ -32,7 +40,7 @@
           <p class="page-subtitle">Kelola verifikasi, penugasan mekanik, dan pantau status perbaikan armada.</p>
         </div>
         <div class="header-actions">
-          <button @click="logout" class="btn btn-secondary btn-sm">Keluar 🔓</button>
+          <button @click="logout" class="btn btn-danger btn-sm">Keluar</button>
         </div>
       </div>
 
@@ -96,7 +104,8 @@
           </div>
         </div>
         <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
-          🔄 {{ isLoading ? 'Memuat...' : 'Segarkan Data' }}
+          <span :class="{ 'spin-animation': isLoading }" style="display: inline-block; margin-right: 4px;">🔄</span>
+          {{ isLoading ? 'Memuat...' : 'Segarkan Data' }}
         </button>
       </div>
 
@@ -192,14 +201,17 @@
         <form @submit.prevent="submitApproval">
           <div class="form-group">
             <label class="form-label" for="namaMekanik">Nama Mekanik</label>
-            <input 
+            <select 
               v-model="modalApprove.nama_mekanik" 
-              type="text" 
               id="namaMekanik" 
               class="form-control" 
-              placeholder="Contoh: Hendro, Budi, Slamet" 
-              required 
-            />
+              required
+            >
+              <option value="" disabled>-- Pilih Mekanik --</option>
+              <option v-for="mech in mechanicsList" :key="mech.id" :value="mech.username">
+                {{ mech.username }}
+              </option>
+            </select>
           </div>
           <div class="modal-buttons">
             <button type="button" @click="modalApprove.show = false" class="btn btn-secondary flex-1">Batal</button>
@@ -259,7 +271,19 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useReports } from '~/composables/useReports'
 
-const { fetchReports, updateReport } = useReports()
+const { fetchReports, updateReport, fetchUsers, authenticateUser } = useReports()
+const mechanicsList = ref([])
+const usernameInput = ref('')
+const loggedInName = ref('')
+
+const loadMechanics = async () => {
+  try {
+    const list = await fetchUsers()
+    mechanicsList.value = list.filter(u => u.role === 'Mekanik')
+  } catch (err) {
+    console.error('Failed to load mechanics:', err)
+  }
+}
 
 useHead({
   title: 'Dashboard Operasional - Trans Jateng',
@@ -279,7 +303,9 @@ onMounted(() => {
     const isAuthed = sessionStorage.getItem('transjateng_operasional_authed')
     if (isAuthed === 'true') {
       isAuthenticated.value = true
+      loggedInName.value = sessionStorage.getItem('transjateng_operasional_nama') || ''
       loadData()
+      loadMechanics()
     } else {
       setTimeout(() => {
         pinInputRef.value?.focus()
@@ -288,15 +314,25 @@ onMounted(() => {
   }
 })
 
-const verifyPIN = () => {
-  if (pinInput.value === '1234') {
-    isAuthenticated.value = true
-    authError.value = false
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('transjateng_operasional_authed', 'true')
+const verifyPIN = async () => {
+  try {
+    const user = await authenticateUser(usernameInput.value, pinInput.value, 'Operasional')
+    if (user) {
+      isAuthenticated.value = true
+      authError.value = false
+      loggedInName.value = user.username
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('transjateng_operasional_authed', 'true')
+        sessionStorage.setItem('transjateng_operasional_nama', user.username)
+      }
+      loadData()
+      loadMechanics()
+    } else {
+      authError.value = true
+      pinInput.value = ''
     }
-    loadData()
-  } else {
+  } catch (err) {
+    console.error(err)
     authError.value = true
     pinInput.value = ''
   }
@@ -304,8 +340,12 @@ const verifyPIN = () => {
 
 const logout = () => {
   isAuthenticated.value = false
+  loggedInName.value = ''
+  usernameInput.value = ''
+  pinInput.value = ''
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('transjateng_operasional_authed')
+    sessionStorage.removeItem('transjateng_operasional_nama')
   }
 }
 
@@ -332,6 +372,8 @@ const showToast = (msg) => {
 
 const loadData = async () => {
   isLoading.value = true
+  // Artificial delay 600ms for a satisfying loading visual effect
+  await new Promise(resolve => setTimeout(resolve, 600))
   try {
     reports.value = await fetchReports()
   } catch (err) {
@@ -482,7 +524,7 @@ const formatDateWithTime = (dateStr) => {
 .auth-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 .auth-desc {
@@ -772,10 +814,35 @@ const formatDateWithTime = (dateStr) => {
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
   .filter-left {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
   }
+  .chip-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chip-container::-webkit-scrollbar {
+    display: none;
+  }
+  .chip-btn {
+    flex-shrink: 0;
+  }
+}
+
+.spin-animation {
+  animation: spin-icon 1s linear infinite;
+}
+@keyframes spin-icon {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
 }
 </style>

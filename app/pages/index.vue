@@ -188,20 +188,20 @@
         </span>
       </NuxtLink>
 
-      <!-- Rekap & Laporan Card -->
-      <NuxtLink to="/rekap" class="portal-card group">
+      <!-- Admin Card -->
+      <NuxtLink to="/admin" class="portal-card group">
         <div class="portal-header">
           <div class="portal-icon-wrapper rekap-color">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
-          <span class="role-badge">Pimpinan / Rekap</span>
+          <span class="role-badge">Administrator</span>
         </div>
-        <h2 class="portal-card-title">Statistik & Rekap PDF</h2>
+        <h2 class="portal-card-title">Portal Admin</h2>
         <p class="portal-card-desc">
-          Lihat analisis performa kerusakan bus secara bulanan dalam grafik interaktif. Cetak laporan bulanan resmi dalam format PDF.
+          Kelola kredensial login pengguna, lihat grafik analitik frekuensi kerusakan bulanan, dan cetak laporan PDF bulanan resmi.
         </p>
         <span class="portal-card-action">
-          Buka Analitik &rarr;
+          Masuk Dashboard &rarr;
         </span>
       </NuxtLink>
     </div>
@@ -605,25 +605,10 @@ const formatTimeAgo = (isoString) => {
   overflow: hidden;
 }
 
-.portal-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: transparent;
-  transition: var(--transition-fast);
-}
-
 .portal-card:hover {
   transform: translateY(-8px);
   border-color: rgba(249, 115, 22, 0.25);
   box-shadow: var(--shadow-lg);
-}
-
-.portal-card:hover::before {
-  background: var(--primary);
 }
 
 .portal-header {
