@@ -2,7 +2,9 @@
   <div class="container fade-in-up">
     <!-- Auth Screen -->
     <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🚌</div>
+      <div class="portal-logo-wrapper">
+        <img src="/bus-portal.png" alt="Bus Trans Jateng" class="portal-logo-img" />
+      </div>
       <h2 class="auth-title">Akses Portal Sopir</h2>
       <p class="auth-desc">Masukkan kode akses untuk membuka form laporan kerusakan.</p>
       
@@ -390,9 +392,17 @@ const handleSubmit = async () => {
   cursor: not-allowed;
   opacity: 0.8;
 }
-.lock-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+.portal-logo-wrapper {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.portal-logo-img {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
 }
 .my-12 {
   margin-top: 3rem;
