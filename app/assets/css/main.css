@@ -370,21 +370,17 @@ body.light {
   padding: 0 1.5rem;
 }
 .navbar-brand {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
 }
 .navbar-logo-img {
   height: 38px;
   width: auto;
   object-fit: contain;
-}
-.navbar-brand span {
-  color: var(--primary);
+  margin-right: 0.45rem;
 }
 .navbar-nav-group {
   display: flex;

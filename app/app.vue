@@ -2,7 +2,7 @@
   <div class="app-layout">
     <!-- Banner Instansi Dinas Perhubungan -->
     <div class="demo-banner">
-      Dinas Perhubungan Provinsi Jawa Tengah
+      BRT TRANS JAWA TENGAH
     </div>
 
     <!-- Navigation Bar -->
@@ -10,7 +10,10 @@
       <div class="navbar-container">
         <NuxtLink to="/" class="navbar-brand">
           <img src="https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg" alt="Trans Jateng Logo" class="navbar-logo-img" />
-          <span>Trans</span>Jateng <small class="brand-sub">Armada</small>
+          <span class="brand-trans">Trans</span>
+          <span class="brand-jateng">Jateng</span>
+          <span class="brand-divider"></span>
+          <span class="brand-armada">Armada</span>
         </NuxtLink>
 
         <!-- Right Side Nav Actions -->
@@ -116,14 +119,33 @@ const toggleTheme = () => {
   position: relative;
   border-bottom: 1.5px solid #d97706;
 }
-.brand-sub {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  margin-left: 0.35rem;
-  font-weight: 400;
-  border-left: 1px solid var(--border-glass);
-  padding-left: 0.35rem;
-  color: var(--text-secondary);
+.brand-trans {
+  color: #ff6b00;
+  font-weight: 800;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+}
+.brand-jateng {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+  margin-left: 0.25rem;
+}
+.brand-divider {
+  display: inline-block;
+  width: 1.5px;
+  height: 24px;
+  background-color: var(--text-muted);
+  opacity: 0.45;
+  margin: 0 0.55rem;
+  border-radius: 1px;
+}
+.brand-armada {
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 main {
   flex: 1;
@@ -146,8 +168,18 @@ main {
   .demo-banner {
     display: none !important;
   }
-  .brand-sub {
-    display: none !important;
+  .navbar-logo-img {
+    height: 32px;
+  }
+  .brand-trans, .brand-jateng {
+    font-size: 1.25rem;
+  }
+  .brand-divider {
+    height: 18px;
+    margin: 0 0.4rem;
+  }
+  .brand-armada {
+    font-size: 1.05rem;
   }
   .theme-toggle-btn {
     width: 36px;
