@@ -44,10 +44,10 @@ export const useReports = () => {
   const isMock = ref(!hasValidConfig)
 
   // Fungsi pembantu untuk format Hari
-  const getHariIndo = (dateStr: string) => {
+  const getHariIndo = (dateStr: string): string => {
     const date = new Date(dateStr)
     const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-    return hari[date.getDay()]
+    return hari[date.getDay()] || 'Senin'
   }
 
   // --- IMPLEMENTASI MOCK USER ---
@@ -131,8 +131,11 @@ export const useReports = () => {
       const list = getMockUsers()
       const index = list.findIndex(u => u.id === id)
       if (index !== -1) {
-        if (updates.username && list.some(u => u.id !== id && u.username.toLowerCase() === updates.username.toLowerCase())) {
-          throw new Error('Username sudah digunakan.')
+        if (updates.username) {
+          const newUsername = updates.username.toLowerCase()
+          if (list.some(u => u.id !== id && u.username.toLowerCase() === newUsername)) {
+            throw new Error('Username sudah digunakan.')
+          }
         }
         list[index] = { ...list[index], ...updates } as User
         saveMockUsers(list)
