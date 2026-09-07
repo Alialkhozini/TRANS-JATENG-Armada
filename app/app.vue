@@ -10,10 +10,11 @@
       <div class="navbar-container">
         <NuxtLink to="/" class="navbar-brand">
           <img src="https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg" alt="Trans Jateng Logo" class="navbar-logo-img" />
-          <span class="brand-trans">Trans</span>
-          <span class="brand-jateng">Jateng</span>
-          <span class="brand-divider"></span>
-          <span class="brand-armada">Armada</span>
+          <div class="brand-divider-red"></div>
+          <div class="brand-text-stack">
+            <span class="brand-title">Trans Jateng</span>
+            <span class="brand-subtitle">Armada Service</span>
+          </div>
         </NuxtLink>
 
         <!-- Right Side Nav Actions -->
@@ -119,33 +120,68 @@ const toggleTheme = () => {
   position: relative;
   border-bottom: 1.5px solid #d97706;
 }
-.brand-trans {
-  color: #ff6b00;
+.navbar-brand {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+.navbar-logo-img {
+  height: 46px;
+  width: auto;
+  object-fit: contain;
+  transition: transform var(--transition-fast);
+}
+.navbar-brand:hover .navbar-logo-img {
+  transform: scale(1.05);
+}
+.brand-divider-red {
+  width: 2px;
+  height: 38px;
+  background: #b91c1c;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin: 0 0.2rem;
+}
+.brand-text-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  line-height: 1.15;
+}
+.brand-title {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
   font-weight: 800;
-  font-size: 1.55rem;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
+  background: linear-gradient(90deg, #dc2626 0%, #b91c1c 30%, #7c3aed 70%, #2563eb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
 }
-.brand-jateng {
-  color: var(--text-primary);
-  font-weight: 800;
-  font-size: 1.55rem;
-  letter-spacing: -0.02em;
-  margin-left: 0.25rem;
+.brand-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.01em;
+  display: block;
+  margin-top: -1px;
 }
-.brand-divider {
-  display: inline-block;
-  width: 1.5px;
-  height: 24px;
-  background-color: var(--text-muted);
-  opacity: 0.45;
-  margin: 0 0.55rem;
-  border-radius: 1px;
+
+:root.light .brand-title {
+  background: linear-gradient(90deg, #991b1b 0%, #b91c1c 30%, #6d28d9 70%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.brand-armada {
-  color: var(--text-muted);
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+
+:root.light .brand-subtitle {
+  color: #526071;
 }
 main {
   flex: 1;
