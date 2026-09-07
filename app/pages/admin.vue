@@ -133,8 +133,8 @@
           <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
           <div class="title-with-badge">
             <h1 class="page-title">{{ isKorlay ? 'Dashboard Monitoring Korlay' : 'Dashboard Admin' }}</h1>
-            <span v-if="isKorlay" class="badge badge-korlay">👁️ Mode Pantau Korlay</span>
-            <span v-else class="badge badge-admin">👑 Administrator</span>
+            <span v-if="isKorlay" class="badge badge-korlay">👁️ {{ currentUsername }}</span>
+            <span v-else class="badge badge-admin">👑 {{ currentUsername }}</span>
           </div>
           <p class="page-subtitle">
             {{ isKorlay 

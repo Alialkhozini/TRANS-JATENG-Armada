@@ -148,7 +148,10 @@
       <div class="page-header">
         <div>
           <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
-          <h1 class="page-title">Portal Tugas Mekanik</h1>
+          <div class="title-with-badge">
+            <h1 class="page-title">Portal Tugas Mekanik</h1>
+            <span v-if="loggedInName" class="badge badge-mekanik">🔧 {{ loggedInName }}</span>
+          </div>
           <p class="page-subtitle">Daftar perbaikan aktif dan penanganan armada bus yang sedang diproses oleh tim mekanik.</p>
         </div>
         <div class="header-actions">
@@ -674,6 +677,23 @@ const formatDateWithTime = (dateStr) => {
 </script>
 
 <style scoped>
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.badge-mekanik {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 0.95rem;
+  padding: 0.35rem 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  border-radius: var(--radius-sm);
+}
+
 .lock-icon {
   font-size: 3rem;
   margin-bottom: 1rem;

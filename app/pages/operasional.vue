@@ -128,7 +128,11 @@
     <div v-else class="container fade-in-up">
       <div class="page-header">
         <div>
-          <h1 class="page-title">Dashboard Operasional</h1>
+          <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
+          <div class="title-with-badge">
+            <h1 class="page-title">Dashboard Operasional</h1>
+            <span v-if="loggedInName" class="badge badge-operasional">🏢 {{ loggedInName }}</span>
+          </div>
           <p class="page-subtitle">Kelola verifikasi, penugasan mekanik, dan pantau status perbaikan armada.</p>
         </div>
         <div class="header-actions">
@@ -605,6 +609,23 @@ const formatDateWithTime = (dateStr) => {
 </script>
 
 <style scoped>
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.badge-operasional {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.95rem;
+  padding: 0.35rem 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  border-radius: var(--radius-sm);
+}
+
 .lock-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
