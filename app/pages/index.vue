@@ -686,7 +686,7 @@ const formatTimeAgo = (isoString) => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.75rem;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .portal-card {

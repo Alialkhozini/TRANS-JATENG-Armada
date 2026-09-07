@@ -1,32 +1,136 @@
 <template>
-  <div class="container fade-in-up">
-    <!-- Auth Screen -->
-    <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="portal-logo-wrapper">
-        <img src="/bus-portal.png" alt="Bus Trans Jateng" class="portal-logo-img" />
+  <div class="sopir-page-root">
+    <!-- Auth Screen Full Page -->
+    <div v-if="!isAuthenticated" class="auth-fullscreen-page auth-sopir-theme">
+      <div class="auth-road-backdrop">
+        <svg class="road-anim-svg" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sopirDaySky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0284c7" stop-opacity="0.9"/>
+              <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#bae6fd" stop-opacity="0.3"/>
+            </linearGradient>
+            <linearGradient id="sopirMtnFar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.4"/>
+            </linearGradient>
+            <linearGradient id="sopirMtnNear" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0f766e" stop-opacity="0.85"/>
+              <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.5"/>
+            </linearGradient>
+            <linearGradient id="sopirHills" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#15803d" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#22c55e" stop-opacity="0.4"/>
+            </linearGradient>
+            <linearGradient id="sopirRoadGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e293b"/>
+              <stop offset="60%" stop-color="#0f172a"/>
+              <stop offset="100%" stop-color="#020617"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Sky Background -->
+          <rect width="1440" height="420" fill="url(#sopirDaySky)"/>
+
+          <!-- Animated Soft Clouds -->
+          <g class="anim-clouds" fill="#ffffff" opacity="0.45">
+            <path d="M120,90 Q140,65 175,70 Q215,60 245,85 Q275,80 290,105 Q280,130 240,125 Q180,135 130,120 Q105,115 120,90 Z"/>
+            <path d="M780,70 Q805,45 845,50 Q885,40 920,68 Q955,62 970,90 Q955,115 915,110 Q850,120 800,102 Q770,95 780,70 Z"/>
+            <path d="M1180,110 Q1200,85 1235,90 Q1275,80 1305,105 Q1335,100 1350,125 Q1340,150 1300,145 Q1240,155 1190,140 Q1165,135 1180,110 Z"/>
+          </g>
+
+          <!-- LAYER 1: Distant Majestic Volcano Mountain Peaks (Continuous Full Width) -->
+          <path d="M-60,400 L110,210 L280,320 L460,180 L650,340 L880,190 L1080,310 L1260,170 L1420,290 L1500,400 L1500,420 L-60,420 Z" fill="url(#sopirMtnFar)"/>
+
+          <!-- LAYER 2: Mid-ground Foothill Ridges (Continuous Full Width) -->
+          <path d="M-60,410 L180,290 L390,370 L600,280 L790,360 L1010,270 L1220,350 L1450,260 L1500,410 L1500,440 L-60,440 Z" fill="url(#sopirMtnNear)"/>
+
+          <!-- LAYER 3: Foreground Green Valleys & Embankments flanking the highway -->
+          <path d="M-60,430 Q220,350 560,390 L880,390 Q1220,350 1500,430 L1500,750 L-60,750 Z" fill="url(#sopirHills)"/>
+
+          <!-- Roadside Soil & Shoulder -->
+          <polygon points="-60,430 540,390 560,390 -160,750 -220,750" fill="#334155" opacity="0.6"/>
+          <polygon points="1500,430 900,390 880,390 1600,750 1660,750" fill="#334155" opacity="0.6"/>
+
+          <!-- 3D Perspective Road (Main Highway Tarmac) -->
+          <polygon points="560,385 880,385 1600,750 -160,750" fill="url(#sopirRoadGrad)"/>
+
+          <!-- Red & White Safety Guide Curb Lines -->
+          <polygon points="550,385 560,385 -160,750 -195,750" fill="#ef4444" opacity="0.95"/>
+          <polygon points="880,385 890,385 1635,750 1600,750" fill="#ef4444" opacity="0.95"/>
+
+          <!-- Animated Road Dashes -->
+          <g class="anim-road-stripes">
+            <!-- Center Double Yellow Flow -->
+            <line x1="720" y1="385" x2="720" y2="750" stroke="#fbbf24" stroke-width="8" stroke-dasharray="40,40" class="moving-dashes"/>
+            <!-- Left & Right Lane Divider Dashes -->
+            <line x1="640" y1="385" x2="280" y2="750" stroke="#ffffff" stroke-width="4" stroke-dasharray="30,35" opacity="0.85" class="moving-dashes"/>
+            <line x1="800" y1="385" x2="1160" y2="750" stroke="#ffffff" stroke-width="4" stroke-dasharray="30,35" opacity="0.85" class="moving-dashes"/>
+          </g>
+
+          <!-- Modern Highway Street Lights (Left & Right Shoulder) -->
+          <g stroke="#64748b" stroke-width="3" fill="none">
+            <!-- Left Lamp 1 -->
+            <path d="M380,480 Q360,420 340,420 L320,420"/>
+            <circle cx="320" cy="423" r="5" fill="#fef08a" stroke="none"/>
+            <ellipse cx="320" cy="435" rx="18" ry="8" fill="#fef08a" opacity="0.3" stroke="none"/>
+            
+            <!-- Right Lamp 1 -->
+            <path d="M1060,480 Q1080,420 1100,420 L1120,420"/>
+            <circle cx="1120" cy="423" r="5" fill="#fef08a" stroke="none"/>
+            <ellipse cx="1120" cy="435" rx="18" ry="8" fill="#fef08a" opacity="0.3" stroke="none"/>
+          </g>
+
+          <!-- Trans Jateng Red-Blue Bus Cruising on Road -->
+          <g class="anim-cruising-bus">
+            <ellipse cx="0" cy="42" rx="46" ry="12" fill="#000000" opacity="0.45"/>
+            <!-- Bus Chassis Red Trans Jateng -->
+            <rect x="-38" y="-20" width="76" height="54" rx="9" fill="#dc2626"/>
+            <!-- Front Windshield & Windows -->
+            <rect x="-32" y="-14" width="64" height="26" rx="4" fill="#0f172a"/>
+            <rect x="-28" y="-11" width="56" height="22" rx="3" fill="#93c5fd" opacity="0.9"/>
+            <!-- Trans Jateng Blue Accent Stripe -->
+            <rect x="-38" y="14" width="76" height="7" fill="#2563eb"/>
+            <!-- Headlights -->
+            <circle cx="-26" cy="25" r="5.5" fill="#fef08a"/>
+            <circle cx="26" cy="25" r="5.5" fill="#fef08a"/>
+            <!-- Grille & License Plate -->
+            <rect x="-16" y="20" width="32" height="10" rx="2" fill="#1e293b"/>
+            <rect x="-12" y="6" width="24" height="6" rx="1" fill="#ffffff"/>
+            <!-- Headlight Beams Glow -->
+            <polygon points="-26,27 -70,80 -10,80" fill="#fef08a" opacity="0.25"/>
+            <polygon points="26,27 10,80 70,80" fill="#fef08a" opacity="0.25"/>
+          </g>
+        </svg>
       </div>
-      <h2 class="auth-title">Akses Portal Sopir</h2>
-      <p class="auth-desc">Masukkan kode untuk membuka akses portal sopir trans jateng armada.</p>
-      
-      <form @submit.prevent="verifyPIN" class="auth-form">
-        <div class="form-group">
-          <input 
-            v-model="pinInput" 
-            type="text" 
-            class="form-control text-center" 
-            placeholder="Ketik Kode / Sandi" 
-            required 
-            ref="pinInputRef"
-          />
+
+      <div class="card auth-card text-center fade-in-up">
+        <div class="portal-logo-wrapper">
+          <img src="/bus-portal.png" alt="Bus Trans Jateng" class="portal-logo-img" />
         </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ Nomor lambung bus salah atau tidak terdaftar (1 s/d 14).</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
-      </form>
-      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+        <h2 class="auth-title">Akses Portal Sopir</h2>
+        <p class="auth-desc">Masukkan kode untuk membuka akses portal sopir trans jateng armada.</p>
+        
+        <form @submit.prevent="verifyPIN" class="auth-form">
+          <div class="form-group">
+            <input 
+              v-model="pinInput" 
+              type="text" 
+              class="form-control text-center" 
+              placeholder="Ketik Kode / Sandi" 
+              required 
+              ref="pinInputRef"
+            />
+          </div>
+          <p v-if="authError" class="error-text text-sm mb-4">❌ Nomor lambung bus salah atau tidak terdaftar (1 s/d 14).</p>
+          <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
+        </form>
+        <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      </div>
     </div>
 
     <!-- Main Screen -->
-    <div v-else>
+    <div v-else class="container fade-in-up">
       <!-- Header -->
       <div class="page-header">
         <div>
@@ -397,6 +501,8 @@
       <span>{{ toast.message }}</span>
     </div>
   </div>
+  
+
 </template>
 
 <script setup>
@@ -1232,5 +1338,92 @@ const handleSubmit = async () => {
   .pill-btn {
     white-space: nowrap;
   }
+}
+
+/* ==========================================================================
+   Full Page Animated Road Login (Sopir Theme)
+   ========================================================================== */
+.sopir-page-root {
+  width: 100%;
+}
+
+.auth-fullscreen-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 65px);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 3rem 1.5rem;
+  background: #080c14;
+}
+
+:root.light .auth-fullscreen-page {
+  background: #e0f2fe;
+}
+
+.auth-road-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.road-anim-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+  max-width: 420px;
+  width: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+:root.light .auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.moving-dashes {
+  animation: dashForward 1s linear infinite;
+}
+
+.anim-clouds {
+  animation: floatClouds 25s linear infinite alternate;
+}
+
+.anim-cruising-bus {
+  animation: busCruising 3.5s ease-in-out infinite;
+}
+
+@keyframes dashForward {
+  0% { stroke-dashoffset: 80; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes floatClouds {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-80px); }
+}
+
+@keyframes busCruising {
+  0% { transform: translate(860px, 480px) translateY(0); }
+  50% { transform: translate(860px, 480px) translateY(-5px); }
+  100% { transform: translate(860px, 480px) translateY(0); }
 }
 </style>

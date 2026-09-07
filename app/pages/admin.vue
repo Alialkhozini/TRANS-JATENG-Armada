@@ -1,43 +1,132 @@
 <template>
-  <div class="container fade-in-up">
-    <!-- Auth Screen -->
-    <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🔒</div>
-      <h2 class="auth-title">Akses Portal Admin & Korlay</h2>
-      <p class="auth-desc">Masukkan PIN atau kata sandi akun untuk membuka dashboard.</p>
-      
-      <form @submit.prevent="verifyAuth" class="auth-form">
-        <div class="form-group text-left">
-          <label class="form-label" for="loginUser">Username</label>
-          <input 
-            v-model="loginUsername" 
-            type="text" 
-            id="loginUser"
-            class="form-control" 
-            placeholder="Contoh: admin / korlay" 
-            ref="usernameInputRef"
-          />
+  <div class="admin-page-root">
+    <!-- Auth Screen Full Page with Cyber Midnight Expressway -->
+    <div v-if="!isAuthenticated" class="auth-fullscreen-page auth-admin-theme">
+      <div class="auth-road-backdrop">
+        <svg class="road-anim-svg" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="cyberSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#090514"/>
+              <stop offset="55%" stop-color="#2e1065" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.3"/>
+            </linearGradient>
+            <linearGradient id="cyberMtn" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b0764" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.4"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Midnight Cyber Sky -->
+          <rect width="1440" height="700" fill="url(#cyberSky)"/>
+
+          <!-- Cyber Starfield -->
+          <g fill="#c084fc" opacity="0.65">
+            <circle cx="120" cy="50" r="1.5"/><circle cx="310" cy="90" r="1.2"/><circle cx="540" cy="40" r="1.8"/>
+            <circle cx="780" cy="70" r="1.4"/><circle cx="980" cy="45" r="2"/><circle cx="1240" cy="85" r="1.3"/>
+            <circle cx="1380" cy="120" r="1.5"/><circle cx="210" cy="130" r="1.2"/>
+          </g>
+
+          <!-- LAYER 1: Full-Width Distant Digital Mountain Ridge -->
+          <path d="M-60,370 L130,210 L330,300 L540,180 L740,310 L960,190 L1170,300 L1350,170 L1500,370 L1500,400 L-60,400 Z" fill="url(#cyberMtn)"/>
+
+          <!-- LAYER 2: Panoramic Digital City Skyline (Seamless across entire width) -->
+          <g fill="#120a2a" opacity="0.92">
+            <rect x="20" y="240" width="45" height="160" rx="2"/>
+            <rect x="75" y="190" width="55" height="210" rx="3"/>
+            <rect x="140" y="140" width="70" height="260" rx="4"/>
+            <polygon points="175,70 165,140 185,140" fill="#a855f7" opacity="0.8"/>
+            <rect x="220" y="210" width="55" height="190" rx="3"/>
+            <rect x="285" y="170" width="65" height="230" rx="3"/>
+            <rect x="360" y="230" width="60" height="170" rx="2"/>
+            
+            <rect x="1020" y="220" width="55" height="180" rx="3"/>
+            <rect x="1085" y="160" width="65" height="240" rx="3"/>
+            <rect x="1160" y="130" width="75" height="270" rx="4"/>
+            <polygon points="1198,60 1188,130 1208,130" fill="#c084fc" opacity="0.8"/>
+            <rect x="1245" y="200" width="60" height="200" rx="3"/>
+            <rect x="1315" y="150" width="60" height="250" rx="3"/>
+            <rect x="1385" y="220" width="50" height="180" rx="2"/>
+          </g>
+
+          <!-- Skyline Window Lights Twinkle -->
+          <g fill="#e9d5ff" opacity="0.75">
+            <circle cx="160" cy="170" r="2.5"/><circle cx="190" cy="170" r="2.5"/><circle cx="160" cy="200" r="2.5"/><circle cx="190" cy="200" r="2.5"/>
+            <circle cx="100" cy="220" r="2"/><circle cx="310" cy="200" r="2"/><circle cx="310" cy="230" r="2"/>
+            <circle cx="1185" cy="160" r="2.5"/><circle cx="1215" cy="160" r="2.5"/><circle cx="1185" cy="190" r="2.5"/><circle cx="1215" cy="190" r="2.5"/>
+            <circle cx="1115" cy="190" r="2"/><circle cx="1340" cy="180" r="2"/><circle cx="1340" cy="210" r="2"/>
+          </g>
+
+          <!-- 3D Perspective Cyber Expressway -->
+          <polygon points="560,330 880,330 1650,750 -210,750" fill="#090514"/>
+          
+          <!-- Neon Purple Edge Barriers -->
+          <line x1="560" y1="330" x2="-210" y2="750" stroke="#a855f7" stroke-width="5" opacity="0.95"/>
+          <line x1="880" y1="330" x2="1650" y2="750" stroke="#a855f7" stroke-width="5" opacity="0.95"/>
+          
+          <!-- Multi-lane Neon Speed Light Streams -->
+          <g class="anim-road-stripes">
+            <line x1="720" y1="330" x2="720" y2="750" stroke="#c084fc" stroke-width="7" stroke-dasharray="45,30" class="moving-dashes-cyber"/>
+            <line x1="640" y1="330" x2="260" y2="750" stroke="#818cf8" stroke-width="4" stroke-dasharray="35,35" class="moving-dashes-cyber"/>
+            <line x1="800" y1="330" x2="1180" y2="750" stroke="#818cf8" stroke-width="4" stroke-dasharray="35,35" class="moving-dashes-cyber"/>
+          </g>
+
+
+
+          <!-- Modern Cyber Highway Street Luminescence Poles -->
+          <g stroke="#6b21a8" stroke-width="3" fill="none">
+            <path d="M370,475 Q350,415 330,415 L310,415"/>
+            <circle cx="310" cy="418" r="5" fill="#c084fc" stroke="none"/>
+            <ellipse cx="310" cy="430" rx="20" ry="8" fill="#a855f7" opacity="0.4" stroke="none"/>
+            
+            <path d="M1070,475 Q1090,415 1110,415 L1130,415"/>
+            <circle cx="1130" cy="418" r="5" fill="#c084fc" stroke="none"/>
+            <ellipse cx="1130" cy="430" rx="20" ry="8" fill="#a855f7" opacity="0.4" stroke="none"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card auth-card text-center fade-in-up">
+        <div class="portal-logo-wrapper">
+          <div class="portal-icon-box admin-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
         </div>
-        <div class="form-group text-left">
-          <label class="form-label" for="loginPin">PIN / Kata Sandi</label>
-          <input 
-            v-model="pinInput" 
-            type="password" 
-            id="loginPin"
-            class="form-control" 
-            placeholder="Ketik PIN atau Sandi" 
-            required 
-            ref="pinInputRef"
-          />
-        </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ {{ authErrorMessage || 'PIN atau kredensial salah.' }}</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
-      </form>
-      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+        <h2 class="auth-title">Akses Portal Admin & Korlay</h2>
+        <p class="auth-desc">Masukkan PIN atau kata sandi akun untuk membuka dashboard.</p>
+        
+        <form @submit.prevent="verifyAuth" class="auth-form">
+          <div class="form-group text-left">
+            <label class="form-label" for="loginUser">Username</label>
+            <input 
+              v-model="loginUsername" 
+              type="text" 
+              id="loginUser"
+              class="form-control" 
+              placeholder="Contoh: admin / korlay" 
+              ref="usernameInputRef"
+            />
+          </div>
+          <div class="form-group text-left">
+            <label class="form-label" for="loginPin">PIN / Kata Sandi</label>
+            <input 
+              v-model="pinInput" 
+              type="password" 
+              id="loginPin"
+              class="form-control" 
+              placeholder="Ketik PIN atau Sandi" 
+              required 
+              ref="pinInputRef"
+            />
+          </div>
+          <p v-if="authError" class="error-text text-sm mb-4">❌ {{ authErrorMessage || 'PIN atau kredensial salah.' }}</p>
+          <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
+        </form>
+        <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      </div>
     </div>
 
     <!-- Main Dashboard Screen -->
-    <div v-else>
+    <div v-else class="container fade-in-up">
       <!-- Header -->
       <div class="page-header">
         <div>
@@ -503,6 +592,8 @@
       <span>{{ toast.message }}</span>
     </div>
   </div>
+  
+
 </template>
 
 <script setup>
@@ -1441,5 +1532,99 @@ const generatePDFReport = async () => {
     font-size: 0.85rem;
     white-space: nowrap;
   }
+}
+
+/* ==========================================================================
+   Full Page Animated Cyber Midnight Expressway (Admin Theme)
+   ========================================================================== */
+.admin-page-root {
+  width: 100%;
+}
+
+.auth-fullscreen-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 65px);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 3rem 1.5rem;
+  background: #090514;
+}
+
+:root.light .auth-fullscreen-page {
+  background: #f3e8ff;
+}
+
+.auth-road-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.road-anim-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+  max-width: 420px;
+  width: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+:root.light .auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.portal-icon-box {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-icon-box {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+}
+
+.moving-dashes-cyber {
+  animation: dashCyber 0.8s linear infinite;
+}
+
+.shield-pulse-ring {
+  animation: shieldPulse 2.5s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes dashCyber {
+  0% { stroke-dashoffset: 75; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes shieldPulse {
+  0% { transform: scale(0.7); opacity: 0.95; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 </style>

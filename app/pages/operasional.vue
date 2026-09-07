@@ -1,40 +1,131 @@
 <template>
-  <div class="container fade-in-up">
-    <!-- PIN Auth Screen -->
-    <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🔒</div>
-      <h2 class="auth-title">Akses Khusus Operasional</h2>
-      <p class="auth-desc">Masukkan username dan PIN Operasional untuk mengakses halaman ini.</p>
-      
-      <form @submit.prevent="verifyPIN" class="auth-form">
-        <div class="form-group">
-          <input 
-            v-model="usernameInput" 
-            type="text" 
-            class="form-control text-center" 
-            placeholder="Username Operasional" 
-            required 
-            ref="usernameInputRef"
-          />
+  <div class="operasional-page-root">
+    <!-- PIN Auth Screen Full Page with Sunset Highway Overpass -->
+    <div v-if="!isAuthenticated" class="auth-fullscreen-page auth-operasional-theme">
+      <div class="auth-road-backdrop">
+        <svg class="road-anim-svg" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sunsetSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#431407"/>
+              <stop offset="45%" stop-color="#c2410c" stop-opacity="0.85"/>
+              <stop offset="80%" stop-color="#ea580c" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.3"/>
+            </linearGradient>
+            <linearGradient id="sunsetMtnFar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7c2d12" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#431407" stop-opacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="sunsetMtnNear" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#9a3412" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#7c2d12" stop-opacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="sunsetRoadGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1c1917"/>
+              <stop offset="60%" stop-color="#0c0a09"/>
+              <stop offset="100%" stop-color="#030712"/>
+            </linearGradient>
+            <linearGradient id="sunsetTerrain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#451a03"/>
+              <stop offset="100%" stop-color="#1c1917"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Sunset Sky -->
+          <rect width="1440" height="420" fill="url(#sunsetSky)"/>
+
+          <!-- Glowing Sun on Horizon -->
+          <circle cx="720" cy="280" r="65" fill="#fef08a" opacity="0.6"/>
+          <circle cx="720" cy="280" r="110" fill="#f59e0b" opacity="0.25"/>
+
+          <!-- LAYER 1: Full-Width Sunset Mountain Ridge -->
+          <path d="M-60,400 L110,230 L290,320 L500,200 L680,330 L890,210 L1110,320 L1300,190 L1500,400 L1500,430 L-60,430 Z" fill="url(#sunsetMtnFar)"/>
+
+          <!-- LAYER 2: Mid-Ground Foothills Ridge -->
+          <path d="M-60,415 L180,305 L410,370 L630,290 L840,360 L1060,280 L1270,350 L1500,280 L1500,440 L-60,440 Z" fill="url(#sunsetMtnNear)"/>
+
+          <!-- LAYER 3: Foreground Sunset Hills Flanking Expressway -->
+          <path d="M-60,430 Q220,360 560,390 L880,390 Q1220,360 1500,430 L1500,750 L-60,750 Z" fill="url(#sunsetTerrain)"/>
+
+          <!-- 3D Perspective Sunset Tollway -->
+          <polygon points="560,385 880,385 1650,750 -210,750" fill="url(#sunsetRoadGrad)"/>
+
+          <!-- Glowing Golden Amber Edge Barrier Curbs -->
+          <polygon points="550,385 560,385 -210,750 -245,750" fill="#f59e0b" opacity="0.9"/>
+          <polygon points="880,385 890,385 1685,750 1650,750" fill="#f59e0b" opacity="0.9"/>
+
+          <!-- Multi-lane Speed Lights Streams (Orange & Gold) -->
+          <g class="anim-road-stripes">
+            <line x1="720" y1="385" x2="720" y2="750" stroke="#f59e0b" stroke-width="8" stroke-dasharray="45,40" class="moving-dashes"/>
+            <line x1="640" y1="385" x2="260" y2="750" stroke="#fef08a" stroke-width="4" stroke-dasharray="30,35" opacity="0.8" class="moving-dashes"/>
+            <line x1="800" y1="385" x2="1180" y2="750" stroke="#fef08a" stroke-width="4" stroke-dasharray="30,35" opacity="0.8" class="moving-dashes"/>
+          </g>
+
+          <!-- Modern Sunset Highway Street Lanterns -->
+          <g stroke="#78350f" stroke-width="3" fill="none">
+            <path d="M370,475 Q350,415 330,415 L310,415"/>
+            <circle cx="310" cy="418" r="5" fill="#fbbf24" stroke="none"/>
+            <ellipse cx="310" cy="430" rx="20" ry="8" fill="#f59e0b" opacity="0.4" stroke="none"/>
+            
+            <path d="M1070,475 Q1090,415 1110,415 L1130,415"/>
+            <circle cx="1130" cy="418" r="5" fill="#fbbf24" stroke="none"/>
+            <ellipse cx="1130" cy="430" rx="20" ry="8" fill="#f59e0b" opacity="0.4" stroke="none"/>
+          </g>
+
+          <!-- Sunset Patrol Vehicle -->
+          <g class="anim-sunset-bus" transform="translate(600, 485)">
+            <ellipse cx="0" cy="40" rx="46" ry="12" fill="#000000" opacity="0.5"/>
+            <rect x="-38" y="-20" width="76" height="54" rx="9" fill="#ea580c"/>
+            <rect x="-32" y="-14" width="64" height="26" rx="4" fill="#1e293b"/>
+            <rect x="-28" y="-11" width="56" height="22" rx="3" fill="#fed7aa" opacity="0.9"/>
+            <circle cx="-26" cy="24" r="5.5" fill="#fef08a"/>
+            <circle cx="26" cy="24" r="5.5" fill="#fef08a"/>
+            <rect x="-16" y="18" width="32" height="11" rx="2" fill="#0f172a"/>
+            <rect x="-12" y="4" width="24" height="6" rx="1" fill="#f59e0b"/>
+            <polygon points="-26,26 -65,75 -10,75" fill="#fef08a" opacity="0.3"/>
+            <polygon points="26,26 10,75 65,75" fill="#fef08a" opacity="0.3"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card auth-card text-center fade-in-up">
+        <div class="portal-logo-wrapper">
+          <div class="portal-icon-box operasional-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 10"/></svg>
+          </div>
         </div>
-        <div class="form-group mt-3">
-          <input 
-            v-model="pinInput" 
-            type="password" 
-            class="form-control text-center" 
-            placeholder="Ketik PIN" 
-            required 
-            ref="pinInputRef"
-          />
-        </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
-      </form>
-      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+        <h2 class="auth-title">Akses Khusus Operasional</h2>
+        <p class="auth-desc">Masukkan username dan PIN Operasional untuk mengakses halaman ini.</p>
+        
+        <form @submit.prevent="verifyPIN" class="auth-form">
+          <div class="form-group">
+            <input 
+              v-model="usernameInput" 
+              type="text" 
+              class="form-control text-center" 
+              placeholder="Username Operasional" 
+              required 
+              ref="usernameInputRef"
+            />
+          </div>
+          <div class="form-group mt-3">
+            <input 
+              v-model="pinInput" 
+              type="password" 
+              class="form-control text-center" 
+              placeholder="Ketik PIN" 
+              required 
+              ref="pinInputRef"
+            />
+          </div>
+          <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
+          <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
+        </form>
+        <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      </div>
     </div>
 
     <!-- Main Dashboard Screen -->
-    <div v-else>
+    <div v-else class="container fade-in-up">
       <div class="page-header">
         <div>
           <h1 class="page-title">Dashboard Operasional</h1>
@@ -266,6 +357,8 @@
       <span>{{ toast.message }}</span>
     </div>
   </div>
+  
+
 </template>
 
 <script setup>
@@ -846,5 +939,108 @@ const formatDateWithTime = (dateStr) => {
 @keyframes spin-icon {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(-360deg); }
+}
+
+/* ==========================================================================
+   Full Page Animated Sunset Toll Highway Login (Operasional Theme)
+   ========================================================================== */
+.operasional-page-root {
+  width: 100%;
+}
+
+.auth-fullscreen-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 65px);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 3rem 1.5rem;
+  background: #1c0a00;
+}
+
+:root.light .auth-fullscreen-page {
+  background: #ffedd5;
+}
+
+.auth-road-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.road-anim-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+  max-width: 420px;
+  width: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+:root.light .auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.portal-icon-box {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.operasional-icon-box {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.moving-dashes {
+  animation: dashSunset 1s linear infinite;
+}
+
+.lantern-pulse {
+  animation: pulseLantern 2s ease-in-out infinite alternate;
+}
+
+.anim-sunset-bus {
+  animation: busSunsetCruise 4s ease-in-out infinite;
+}
+
+@keyframes dashSunset {
+  0% { stroke-dashoffset: 85; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes pulseLantern {
+  0% { filter: drop-shadow(0 0 4px #f59e0b); opacity: 0.8; }
+  100% { filter: drop-shadow(0 0 16px #fbbf24); opacity: 1; }
+}
+
+@keyframes busSunsetCruise {
+  0% { transform: translate(600px, 480px) translateY(0); }
+  50% { transform: translate(600px, 480px) translateY(-5px); }
+  100% { transform: translate(600px, 480px) translateY(0); }
 }
 </style>

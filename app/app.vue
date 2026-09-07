@@ -52,7 +52,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer">
+    <footer v-if="route.path === '/'" class="app-footer">
       <div class="footer-container">
         <p>&copy; 2026 Trans Jateng Armada.</p>
       </div>
@@ -62,9 +62,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useReports } from '~/composables/useReports'
 
 const { isMock } = useReports()
+const route = useRoute()
 
 const isMobileMenuOpen = ref(false)
 const isLightTheme = ref(false)
@@ -189,9 +191,9 @@ main {
 .app-footer {
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-glass);
-  padding: 2rem 0;
+  padding: 1.25rem 0;
   text-align: center;
-  margin-top: 4rem;
+  margin-top: auto;
   transition: background-color var(--transition-normal);
 }
 .footer-container p { 

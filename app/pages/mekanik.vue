@@ -1,40 +1,150 @@
 <template>
-  <div class="container fade-in-up">
-    <!-- PIN Auth Screen -->
-    <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
-      <div class="lock-icon">🔧</div>
-      <h2 class="auth-title">Akses Portal Mekanik</h2>
-      <p class="auth-desc">Masukkan username dan PIN untuk melihat tugas perbaikan Anda.</p>
-      
-      <form @submit.prevent="verifyPIN" class="auth-form">
-        <div class="form-group">
-          <input 
-            v-model="usernameInput" 
-            type="text" 
-            class="form-control text-center" 
-            placeholder="Username Mekanik" 
-            required 
-            ref="usernameInputRef"
-          />
+  <div class="mekanik-page-root">
+    <!-- PIN Auth Screen Full Page with Night Maintenance Depot Drive-Through -->
+    <div v-if="!isAuthenticated" class="auth-fullscreen-page auth-mekanik-theme">
+      <div class="auth-road-backdrop">
+        <svg class="road-anim-svg" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="depotNightSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#022c22"/>
+              <stop offset="55%" stop-color="#064e3b" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#0f172a" stop-opacity="0.3"/>
+            </linearGradient>
+            <linearGradient id="depotMtnFar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#064e3b" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#022c22" stop-opacity="0.5"/>
+            </linearGradient>
+            <linearGradient id="depotMtnNear" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#047857" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#065f46" stop-opacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="depotTarmac" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#111827"/>
+              <stop offset="50%" stop-color="#090d16"/>
+              <stop offset="100%" stop-color="#030712"/>
+            </linearGradient>
+            <linearGradient id="depotTerrain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#064e3b"/>
+              <stop offset="100%" stop-color="#022c22"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Deep Emerald Night Sky -->
+          <rect width="1440" height="420" fill="url(#depotNightSky)"/>
+
+          <!-- Starry Night Twinkles -->
+          <g fill="#a7f3d0" opacity="0.6">
+            <circle cx="150" cy="60" r="1.5"/><circle cx="340" cy="110" r="1.2"/><circle cx="580" cy="45" r="1.8"/>
+            <circle cx="820" cy="80" r="1.5"/><circle cx="1060" cy="50" r="2"/><circle cx="1280" cy="95" r="1.3"/>
+            <circle cx="220" cy="140" r="1.2"/><circle cx="1190" cy="130" r="1.6"/>
+          </g>
+
+          <!-- LAYER 1: Full-Width Distant Mountain Ridge -->
+          <path d="M-60,400 L120,220 L310,310 L510,190 L710,330 L930,200 L1140,310 L1320,180 L1500,400 L1500,430 L-60,430 Z" fill="url(#depotMtnFar)"/>
+
+          <!-- LAYER 2: Full-Width Mid-Ground Forest Hills -->
+          <path d="M-60,415 L190,295 L420,365 L650,285 L860,355 L1080,275 L1290,345 L1500,270 L1500,440 L-60,440 Z" fill="url(#depotMtnNear)"/>
+
+          <!-- LAYER 3: Foreground Terrain flanking the Inspection Lane -->
+          <path d="M-60,430 Q220,360 560,390 L880,390 Q1220,360 1500,430 L1500,750 L-60,750 Z" fill="url(#depotTerrain)"/>
+
+          <!-- Clean Modern Depot Workshop Silhouettes on far horizon (Clean, flush, no clumsy poles) -->
+          <g fill="#0f172a" opacity="0.85">
+            <!-- Left Modern Service Bay -->
+            <polygon points="60,340 180,310 320,340 320,400 60,400"/>
+            <rect x="110" y="350" width="35" height="40" rx="2" fill="#34d399" opacity="0.4"/>
+            <rect x="180" y="350" width="35" height="40" rx="2" fill="#34d399" opacity="0.4"/>
+
+            <!-- Right Modern Service Bay -->
+            <polygon points="1120,340 1260,310 1380,340 1380,400 1120,400"/>
+            <rect x="1170" y="350" width="35" height="40" rx="2" fill="#34d399" opacity="0.4"/>
+            <rect x="1240" y="350" width="35" height="40" rx="2" fill="#34d399" opacity="0.4"/>
+          </g>
+
+          <!-- 3D Perspective Depot Tarmac & Pit Road -->
+          <polygon points="560,385 880,385 1650,750 -210,750" fill="url(#depotTarmac)"/>
+
+          <!-- Hazard Striped Border Curbs (Emerald Neon & Dark Slate) -->
+          <polygon points="550,385 560,385 -210,750 -245,750" fill="#10b981" opacity="0.9"/>
+          <polygon points="880,385 890,385 1685,750 1650,750" fill="#10b981" opacity="0.9"/>
+
+          <!-- Glowing Green Depot Runway Center Lines -->
+          <g class="anim-road-stripes">
+            <line x1="720" y1="385" x2="720" y2="750" stroke="#10b981" stroke-width="8" stroke-dasharray="45,40" class="moving-dashes-green"/>
+            <line x1="640" y1="385" x2="260" y2="750" stroke="#34d399" stroke-width="4" stroke-dasharray="30,35" opacity="0.75" class="moving-dashes-green"/>
+            <line x1="800" y1="385" x2="1180" y2="750" stroke="#34d399" stroke-width="4" stroke-dasharray="30,35" opacity="0.75" class="moving-dashes-green"/>
+          </g>
+
+          <!-- Modern Sleek Depot Floodlights (Clean roadside lamps with green glow) -->
+          <g stroke="#334155" stroke-width="3" fill="none">
+            <!-- Left Lamp -->
+            <path d="M370,475 Q350,415 330,415 L310,415"/>
+            <circle cx="310" cy="418" r="5" fill="#34d399" stroke="none"/>
+            <ellipse cx="310" cy="430" rx="20" ry="8" fill="#10b981" opacity="0.35" stroke="none"/>
+            
+            <!-- Right Lamp -->
+            <path d="M1070,475 Q1090,415 1110,415 L1130,415"/>
+            <circle cx="1130" cy="418" r="5" fill="#34d399" stroke="none"/>
+            <ellipse cx="1130" cy="430" rx="20" ry="8" fill="#10b981" opacity="0.35" stroke="none"/>
+          </g>
+
+          <!-- Mobile Service Maintenance Unit on Side Lane -->
+          <g class="anim-service-truck" transform="translate(860, 490)">
+            <ellipse cx="0" cy="38" rx="44" ry="11" fill="#000000" opacity="0.5"/>
+            <!-- Service Van Body Emerald -->
+            <rect x="-35" y="-18" width="70" height="48" rx="8" fill="#047857"/>
+            <rect x="-30" y="-12" width="60" height="22" rx="4" fill="#0f172a"/>
+            <rect x="-26" y="-9" width="52" height="18" rx="3" fill="#a7f3d0" opacity="0.9"/>
+            <circle cx="-24" cy="20" r="5" fill="#fef08a"/>
+            <circle cx="24" cy="20" r="5" fill="#fef08a"/>
+            <!-- Top Flashing Amber Service Beacon -->
+            <rect x="-8" y="-24" width="16" height="6" rx="2" fill="#f59e0b" class="service-beacon-blink"/>
+            <!-- Headlight Cones -->
+            <polygon points="-24,22 -60,70 -10,70" fill="#fef08a" opacity="0.25"/>
+            <polygon points="24,22 10,70 60,70" fill="#fef08a" opacity="0.25"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card auth-card text-center fade-in-up">
+        <div class="portal-logo-wrapper">
+          <div class="portal-icon-box mekanik-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          </div>
         </div>
-        <div class="form-group mt-3">
-          <input 
-            v-model="pinInput" 
-            type="password" 
-            class="form-control text-center" 
-            placeholder="Ketik PIN" 
-            required 
-            ref="pinInputRef"
-          />
-        </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
-      </form>
-      <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+        <h2 class="auth-title">Akses Portal Mekanik</h2>
+        <p class="auth-desc">Masukkan username dan PIN untuk melihat tugas perbaikan Anda.</p>
+        
+        <form @submit.prevent="verifyPIN" class="auth-form">
+          <div class="form-group">
+            <input 
+              v-model="usernameInput" 
+              type="text" 
+              class="form-control text-center" 
+              placeholder="Username Mekanik" 
+              required 
+              ref="usernameInputRef"
+            />
+          </div>
+          <div class="form-group mt-3">
+            <input 
+              v-model="pinInput" 
+              type="password" 
+              class="form-control text-center" 
+              placeholder="Ketik PIN" 
+              required 
+              ref="pinInputRef"
+            />
+          </div>
+          <p v-if="authError" class="error-text text-sm mb-4">❌ Username atau PIN salah.</p>
+          <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
+        </form>
+        <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
+      </div>
     </div>
 
     <!-- Active Tasks Screen -->
-    <div v-else>
+    <div v-else class="container fade-in-up">
       <div class="page-header">
         <div>
           <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
@@ -247,6 +357,8 @@
       <span>{{ toast.message }}</span>
     </div>
   </div>
+  
+
 </template>
 
 <script setup>
@@ -959,5 +1071,108 @@ const formatDateWithTime = (dateStr) => {
 .search-input:focus + .search-icon {
   color: var(--primary);
   opacity: 1;
+}
+
+/* ==========================================================================
+   Full Page Animated Night Maintenance Depot Login (Mekanik Theme)
+   ========================================================================== */
+.mekanik-page-root {
+  width: 100%;
+}
+
+.auth-fullscreen-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 65px);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 3rem 1.5rem;
+  background: #022c22;
+}
+
+:root.light .auth-fullscreen-page {
+  background: #d1fae5;
+}
+
+.auth-road-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.road-anim-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+  max-width: 420px;
+  width: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+:root.light .auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.portal-icon-box {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mekanik-icon-box {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.moving-dashes-green {
+  animation: dashGreenDepot 1s linear infinite;
+}
+
+.service-beacon-blink {
+  animation: beaconFlash 1.2s infinite;
+}
+
+.anim-service-truck {
+  animation: truckCruise 3.8s ease-in-out infinite;
+}
+
+@keyframes dashGreenDepot {
+  0% { stroke-dashoffset: 85; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes beaconFlash {
+  0%, 45% { opacity: 1; filter: drop-shadow(0 0 8px #f59e0b); }
+  50%, 100% { opacity: 0.2; filter: none; }
+}
+
+@keyframes truckCruise {
+  0% { transform: translate(860px, 490px) translateY(0); }
+  50% { transform: translate(860px, 490px) translateY(-5px); }
+  100% { transform: translate(860px, 490px) translateY(0); }
 }
 </style>
