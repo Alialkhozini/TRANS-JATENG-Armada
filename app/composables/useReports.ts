@@ -247,8 +247,44 @@ export const useReports = () => {
     }
   }
 
-  // Hapus Laporan Tunggal
-  const deleteReport = async (id: string) => {
+  // Fungsi Pembantu Hapus Foto dari Cloudinary
+  const deleteCloudinaryImages = async (urls: (string | undefined | null)[]) => {
+    const validUrls = urls.filter((u): u is string => typeof u === 'string' && u.length > 0 && u.includes('cloudinary.com'))
+    if (validUrls.length === 0) return
+    try {
+      await $fetch('/api/delete-image', {
+        method: 'POST',
+        body: { urls: validUrls }
+      })
+    } catch (err) {
+      console.warn('Failed to delete image from Cloudinary:', err)
+    }
+  }
+
+  // Hapus Laporan Tunggal & Fotonya di Cloudinary
+  const deleteReport = async (id: string, reportObj?: Laporan) => {
+    let target = reportObj
+    if (!target) {
+      if (isMock.value) {
+        target = getMockReports().find(r => r.id === id)
+      } else {
+        try {
+          const { data } = await supabase.from('laporan').select('*').eq('id', id).single()
+          target = data || undefined
+        } catch (_) {}
+      }
+    }
+
+    // Hapus foto terkait di Cloudinary secara otomatis
+    if (target) {
+      const photos = [
+        target.foto_sebelum,
+        target.foto_pasca_penanganan,
+        target.foto_hasil_perbaikan
+      ]
+      await deleteCloudinaryImages(photos)
+    }
+
     if (isMock.value) {
       const list = getMockReports()
       const filtered = list.filter(r => r.id !== id)
@@ -270,8 +306,23 @@ export const useReports = () => {
     }
   }
 
-  // Kosongkan Seluruh Data Laporan
+  // Kosongkan Seluruh Data Laporan & Semua Fotonya di Cloudinary
   const clearAllReports = async () => {
+    try {
+      const allReports = await fetchReports()
+      const allPhotos: string[] = []
+      allReports.forEach(r => {
+        if (r.foto_sebelum) allPhotos.push(r.foto_sebelum)
+        if (r.foto_pasca_penanganan) allPhotos.push(r.foto_pasca_penanganan)
+        if (r.foto_hasil_perbaikan) allPhotos.push(r.foto_hasil_perbaikan)
+      })
+      if (allPhotos.length > 0) {
+        await deleteCloudinaryImages(allPhotos)
+      }
+    } catch (e) {
+      console.warn('Error collecting photos for deletion:', e)
+    }
+
     if (isMock.value) {
       saveMockReports([])
       return true
@@ -459,6 +510,7 @@ export const useReports = () => {
     deleteUser,
     authenticateUser,
     deleteReport,
-    clearAllReports
+    clearAllReports,
+    deleteCloudinaryImages
   }
 }
