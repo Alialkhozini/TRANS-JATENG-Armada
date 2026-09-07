@@ -344,9 +344,19 @@
             <h2 class="card-title">📋 Rekapitulasi Data Laporan</h2>
             <p class="text-sm text-secondary">Tabel pemantauan seluruh riwayat laporan kerusakan armada Trans Jateng.</p>
           </div>
-          <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
-            {{ isLoading ? '🔄 Memuat...' : '🔄 Segarkan Data' }}
-          </button>
+          <div class="table-actions-header">
+            <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
+              {{ isLoading ? '🔄 Memuat...' : '🔄 Segarkan Data' }}
+            </button>
+            <button 
+              v-if="!isKorlay && reports.length > 0" 
+              @click="handleClearAllReports" 
+              class="btn btn-danger btn-sm" 
+              :disabled="isLoading"
+            >
+              🗑️ Kosongkan Semua Laporan
+            </button>
+          </div>
         </div>
 
         <!-- Filter and Search Bar -->
@@ -402,9 +412,19 @@
                   </span>
                 </td>
                 <td>
-                  <button @click="openReportDetail(r)" class="btn btn-secondary btn-sm">
-                    👁️ Detail
-                  </button>
+                  <div class="action-buttons-cell">
+                    <button @click="openReportDetail(r)" class="btn btn-secondary btn-sm" title="Lihat Detail">
+                      👁️ Detail
+                    </button>
+                    <button 
+                      v-if="!isKorlay" 
+                      @click="handleDeleteReport(r)" 
+                      class="btn btn-danger btn-sm" 
+                      title="Hapus Laporan Ini"
+                    >
+                      🗑️ Hapus
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -574,7 +594,17 @@
             </div>
           </div>
 
-          <button type="button" @click="selectedReport = null" class="btn btn-secondary w-full">Tutup</button>
+          <div class="modal-buttons mt-4">
+            <button type="button" @click="selectedReport = null" class="btn btn-secondary flex-1">Tutup</button>
+            <button 
+              v-if="!isKorlay" 
+              type="button" 
+              @click="handleDeleteReport(selectedReport)" 
+              class="btn btn-danger flex-1"
+            >
+              🗑️ Hapus Laporan
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -600,7 +630,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useReports } from '~/composables/useReports'
 
-const { fetchReports, fetchUsers, createUser, updateUser, deleteUser } = useReports()
+const { fetchReports, fetchUsers, createUser, updateUser, deleteUser, deleteReport, clearAllReports } = useReports()
 
 useHead({
   title: 'Dashboard Admin & Monitoring - Trans Jateng',
@@ -829,6 +859,40 @@ const openReportDetail = (report) => {
 
 const openPhotoZoom = (url) => {
   zoomedPhotoUrl.value = url
+}
+
+const handleDeleteReport = async (report) => {
+  if (!report) return
+  if (confirm(`Apakah Anda yakin ingin menghapus laporan armada "${report.no_armada}" (ID: ${report.id})?`)) {
+    try {
+      await deleteReport(report.id)
+      showToast(`Laporan ${report.id} berhasil dihapus.`)
+      if (selectedReport.value?.id === report.id) {
+        selectedReport.value = null
+      }
+      await loadData()
+    } catch (err) {
+      console.error('Failed to delete report:', err)
+      showToast('Gagal menghapus laporan.')
+    }
+  }
+}
+
+const handleClearAllReports = async () => {
+  const confirmText = prompt('Ketik "HAPUS" untuk mengonfirmasi penghapusan seluruh riwayat data laporan:')
+  if (confirmText === 'HAPUS') {
+    try {
+      await clearAllReports()
+      showToast('Semua riwayat data laporan berhasil dibersihkan.')
+      selectedReport.value = null
+      await loadData()
+    } catch (err) {
+      console.error('Failed to clear all reports:', err)
+      showToast('Gagal mengosongkan data laporan.')
+    }
+  } else if (confirmText !== null) {
+    showToast('Konfirmasi dibatalkan (kata kunci tidak sesuai).')
+  }
 }
 
 const filteredReports = computed(() => {
@@ -1201,6 +1265,13 @@ const generatePDFReport = async () => {
 .action-buttons-cell {
   display: flex;
   gap: 0.5rem;
+}
+
+.table-actions-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .select-inline {

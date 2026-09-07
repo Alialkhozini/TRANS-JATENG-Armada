@@ -226,10 +226,10 @@ export const useReports = () => {
   const getMockReports = (): Laporan[] => {
     if (typeof window === 'undefined') return []
     
-    // One-time migration to drop old mock dummy reports
-    if (!localStorage.getItem('transjateng_reports_dropped_dummy_v3')) {
+    // One-time migration to drop old mock dummy reports and start fresh
+    if (!localStorage.getItem('transjateng_reports_fresh_v2')) {
       localStorage.removeItem('transjateng_reports')
-      localStorage.setItem('transjateng_reports_dropped_dummy_v3', 'true')
+      localStorage.setItem('transjateng_reports_fresh_v2', 'true')
     }
 
     const saved = localStorage.getItem('transjateng_reports')
@@ -244,6 +244,51 @@ export const useReports = () => {
   const saveMockReports = (reports: Laporan[]) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('transjateng_reports', JSON.stringify(reports))
+    }
+  }
+
+  // Hapus Laporan Tunggal
+  const deleteReport = async (id: string) => {
+    if (isMock.value) {
+      const list = getMockReports()
+      const filtered = list.filter(r => r.id !== id)
+      saveMockReports(filtered)
+      return true
+    }
+
+    try {
+      const { error } = await supabase
+        .from('laporan')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      return true
+    } catch (err) {
+      console.error(`Failed to delete report ${id}:`, err)
+      throw err
+    }
+  }
+
+  // Kosongkan Seluruh Data Laporan
+  const clearAllReports = async () => {
+    if (isMock.value) {
+      saveMockReports([])
+      return true
+    }
+
+    try {
+      const { error } = await supabase
+        .from('laporan')
+        .delete()
+        .neq('id', '')
+
+      if (error) throw error
+      saveMockReports([])
+      return true
+    } catch (err) {
+      console.error('Failed to clear all reports:', err)
+      throw err
     }
   }
 
@@ -412,6 +457,8 @@ export const useReports = () => {
     createUser,
     updateUser,
     deleteUser,
-    authenticateUser
+    authenticateUser,
+    deleteReport,
+    clearAllReports
   }
 }
