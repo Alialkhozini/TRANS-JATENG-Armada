@@ -1,209 +1,212 @@
 <template>
-  <div class="container fade-in-up">
-    <!-- Hero Section -->
-    <div class="hero-container">
-      <div class="hero-logo-wrapper">
-        <img src="https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg" alt="Trans Jateng Logo Logo" class="hero-logo" />
+  <div class="index-page">
+    <!-- Hero Banner with Trans Jateng Bus Background & Wave Transition -->
+    <section class="hero-banner">
+      <div class="hero-bg-overlay"></div>
+      <div class="hero-particles-glow"></div>
+      
+      <div class="hero-content">
+
+        <div class="hero-logo-wrapper">
+          <img src="https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg" alt="Trans Jateng Logo" class="hero-logo" />
+        </div>
+        
+        <h1 class="hero-title">Sistem Pelaporan Kerusakan & Perbaikan Armada</h1>
+        <p class="hero-desc">
+          Solusi terintegrasi untuk mendokumentasikan kerusakan bus Trans Jateng secara terstruktur. Menggantikan tumpukan pesan WhatsApp dengan database terpusat yang terpantau secara real-time.
+        </p>
+
+        <!-- Curvy Road Bus Loop Animation (MotoGP Style) with Glass Backplate -->
+        <div class="road-animation-container">
+          <svg ref="svgRef" class="road-svg" viewBox="0 0 600 240">
+            <filter id="road-shadow" x="-10%" y="-20%" width="120%" height="140%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/>
+            </filter>
+            
+            <!-- Scenery Decor: Trees -->
+            <g transform="translate(140, 70)">
+              <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
+              <circle cx="0" cy="0" r="10" fill="#16a34a" />
+              <circle cx="-5" cy="-3" r="8" fill="#15803d" />
+            </g>
+            <g transform="translate(500, 110)">
+              <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
+              <circle cx="0" cy="0" r="10" fill="#16a34a" />
+              <circle cx="5" cy="-3" r="8" fill="#15803d" />
+            </g>
+            <g transform="translate(300, 140)">
+              <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
+              <circle cx="0" cy="0" r="8" fill="#22c55e" />
+            </g>
+            <g transform="translate(380, 205)">
+              <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
+              <circle cx="0" cy="0" r="9" fill="#15803d" />
+            </g>
+
+            <!-- Scenery Decor: Bus Stop Shelter -->
+            <g transform="translate(160, 205)">
+              <rect x="-15" y="-8" width="30" height="16" rx="2" fill="#334155" />
+              <rect x="-13" y="-6" width="26" height="12" fill="#cbd5e1" />
+              <text x="0" y="3" font-size="8" text-anchor="middle" fill="#0f172a" font-weight="bold">BUS</text>
+            </g>
+            
+            <!-- Road Background border -->
+            <path d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="var(--border-glass)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <!-- Asphalt Road (Clockwise Path) -->
+            <path id="road-path" ref="roadPathRef" d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="#253043" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" filter="url(#road-shadow)" />
+            
+            <!-- Center Dashed Line -->
+            <path d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8,8" opacity="0.8" />
+            
+            <!-- Traffic Light Pole -->
+            <g transform="translate(430, 25)">
+              <line x1="0" y1="0" x2="0" y2="25" stroke="#64748b" stroke-width="2.5" />
+              <rect x="-6" y="-18" width="12" height="20" rx="2" fill="#0f172a" stroke="#475569" stroke-width="1" />
+              <circle cx="0" cy="-13" r="3.5" :fill="isGreen ? '#ef444422' : '#ef4444'" />
+              <circle cx="0" cy="-5" r="3.5" :fill="isGreen ? '#22c55e' : '#22c55e22'" />
+            </g>
+
+            <!-- Render 3 Buses using reactive JS coordinates -->
+            <g v-for="bus in buses" :key="bus.id" :transform="`translate(${bus.x}, ${bus.y}) rotate(${bus.angle})`">
+              <rect x="-10" y="-9" width="6" height="2" fill="#0c111d" rx="0.5" />
+              <rect x="6" y="-9" width="6" height="2" fill="#0c111d" rx="0.5" />
+              <rect x="-10" y="7" width="6" height="2" fill="#0c111d" rx="0.5" />
+              <rect x="6" y="7" width="6" height="2" fill="#0c111d" rx="0.5" />
+              
+              <rect x="-14" y="-7" width="28" height="14" rx="3" :fill="bus.color" />
+              <rect x="-9" y="-5" width="18" height="10" rx="1.5" fill="#f8fafc" />
+              <path d="M 9,-4 L 12,-3 L 12,3 L 9,4 Z" fill="#7dd3fc" />
+              
+              <circle cx="13" cy="-3" r="1.2" fill="#fbbf24" />
+              <circle cx="13" cy="3" r="1.2" fill="#fbbf24" />
+              
+              <rect x="-7" y="-6" width="3" height="1" fill="#1e293b" />
+              <rect x="-3" y="-6" width="3" height="1" fill="#1e293b" />
+              <rect x="1" y="-6" width="3" height="1" fill="#1e293b" />
+              <rect x="-7" y="5" width="3" height="1" fill="#1e293b" />
+              <rect x="-3" y="5" width="3" height="1" fill="#1e293b" />
+              <rect x="1" y="5" width="3" height="1" fill="#1e293b" />
+            </g>
+          </svg>
+        </div>
       </div>
-      <h1 class="hero-title">Sistem Pelaporan Kerusakan & Perbaikan Armada</h1>
-      <p class="hero-desc">
-        Solusi terintegrasi untuk mendokumentasikan kerusakan bus Trans Jateng secara terstruktur. Menggantikan tumpukan pesan WhatsApp dengan database terpusat yang terpantau secara real-time.
-      </p>
 
-      <!-- Curvy Road Bus Loop Animation (MotoGP Style - Non-crossing Circuit) -->
-      <div class="road-animation-container">
-        <svg ref="svgRef" class="road-svg" viewBox="0 0 600 240">
-          <filter id="road-shadow" x="-10%" y="-20%" width="120%" height="140%">
-            <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/>
-          </filter>
-          
-          <!-- Scenery Decor: Trees -->
-          <!-- Tree 1 (Left Loop) -->
-          <g transform="translate(140, 70)">
-            <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
-            <circle cx="0" cy="0" r="10" fill="#16a34a" />
-            <circle cx="-5" cy="-3" r="8" fill="#15803d" />
-          </g>
-          <!-- Tree 2 (Right Hairpin) -->
-          <g transform="translate(500, 110)">
-            <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
-            <circle cx="0" cy="0" r="10" fill="#16a34a" />
-            <circle cx="5" cy="-3" r="8" fill="#15803d" />
-          </g>
-          <!-- Tree 3 (Center Inner Area) -->
-          <g transform="translate(300, 140)">
-            <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
-            <circle cx="0" cy="0" r="8" fill="#22c55e" />
-          </g>
-          <!-- Tree 4 (Bottom-Right Area) -->
-          <g transform="translate(380, 205)">
-            <rect x="-2" y="5" width="4" height="8" fill="#78350f" />
-            <circle cx="0" cy="0" r="9" fill="#15803d" />
-          </g>
-
-          <!-- Scenery Decor: Bus Stop Shelter -->
-          <g transform="translate(160, 205)">
-            <rect x="-15" y="-8" width="30" height="16" rx="2" fill="#334155" />
-            <rect x="-13" y="-6" width="26" height="12" fill="#cbd5e1" />
-            <text x="0" y="3" font-size="8" text-anchor="middle" fill="#0f172a" font-weight="bold">BUS</text>
-          </g>
-          
-          <!-- Road Background border (simulates gravel/edge) -->
-          <path d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="var(--border-glass)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
-          
-          <!-- Asphalt Road (Clockwise Path) -->
-          <path id="road-path" ref="roadPathRef" d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="#253043" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" filter="url(#road-shadow)" />
-          
-          <!-- Center Dashed Line -->
-          <path d="M 80,120 C 80,120 150,120 250,120 C 290,120 310,60 370,60 L 470,60 C 530,60 550,160 470,160 C 410,160 390,100 330,100 C 270,100 250,180 190,180 L 120,180 C 60,180 60,120 80,120 Z" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8,8" opacity="0.8" />
-          
-          <!-- Traffic Light Pole at top straight section -->
-          <g transform="translate(430, 25)">
-            <!-- Pole -->
-            <line x1="0" y1="0" x2="0" y2="25" stroke="#64748b" stroke-width="2.5" />
-            <!-- Light Box -->
-            <rect x="-6" y="-18" width="12" height="20" rx="2" fill="#0f172a" stroke="#475569" stroke-width="1" />
-            <!-- Lights (Toggle fill color) -->
-            <circle cx="0" cy="-13" r="3.5" :fill="isGreen ? '#ef444422' : '#ef4444'" />
-            <circle cx="0" cy="-5" r="3.5" :fill="isGreen ? '#22c55e' : '#22c55e22'" />
-          </g>
-
-          <!-- Render 3 Buses using reactive JS coordinates -->
-          <g v-for="bus in buses" :key="bus.id" :transform="`translate(${bus.x}, ${bus.y}) rotate(${bus.angle})`">
-            <!-- Wheels -->
-            <rect x="-10" y="-9" width="6" height="2" fill="#0c111d" rx="0.5" />
-            <rect x="6" y="-9" width="6" height="2" fill="#0c111d" rx="0.5" />
-            <rect x="-10" y="7" width="6" height="2" fill="#0c111d" rx="0.5" />
-            <rect x="6" y="7" width="6" height="2" fill="#0c111d" rx="0.5" />
-            
-            <!-- Bus Body -->
-            <rect x="-14" y="-7" width="28" height="14" rx="3" :fill="bus.color" />
-            
-            <!-- Roof -->
-            <rect x="-9" y="-5" width="18" height="10" rx="1.5" fill="#f8fafc" />
-            
-            <!-- Front Windshield -->
-            <path d="M 9,-4 L 12,-3 L 12,3 L 9,4 Z" fill="#7dd3fc" />
-            
-            <!-- Headlights -->
-            <circle cx="13" cy="-3" r="1.2" fill="#fbbf24" />
-            <circle cx="13" cy="3" r="1.2" fill="#fbbf24" />
-            
-            <!-- Side Windows -->
-            <rect x="-7" y="-6" width="3" height="1" fill="#1e293b" />
-            <rect x="-3" y="-6" width="3" height="1" fill="#1e293b" />
-            <rect x="1" y="-6" width="3" height="1" fill="#1e293b" />
-            <rect x="-7" y="5" width="3" height="1" fill="#1e293b" />
-            <rect x="-3" y="5" width="3" height="1" fill="#1e293b" />
-            <rect x="1" y="5" width="3" height="1" fill="#1e293b" />
-          </g>
+      <!-- Wave divider SVG at bottom of hero boundary -->
+      <div class="hero-wave-divider">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none" class="wave-svg">
+          <!-- Subtle layered wave for depth -->
+          <path d="M0,25 C360,95 520,5 920,40 C1220,70 1360,20 1440,35 L1440,100 L0,100 Z" fill="var(--bg-primary)" opacity="0.35" />
+          <!-- Main crisp wave matching reference border -->
+          <path d="M0,45 C320,110 460,-15 800,30 C1100,70 1280,10 1440,35 L1440,100 L0,100 Z" fill="var(--bg-primary)" />
         </svg>
       </div>
-    </div>
+    </section>
 
-    <!-- Live Report Tracker Card -->
-    <div class="live-tracker-card card mb-12">
-      <div class="tracker-header">
-        <div class="tracker-header-left">
-          <span class="pulse-indicator"></span>
-          <h3 class="tracker-title">Aktivitas Laporan Terbaru</h3>
+    <!-- Main Content Container -->
+    <div class="container main-content-wrapper fade-in-up">
+      <!-- Live Report Tracker Card -->
+      <div class="live-tracker-card card mb-12">
+        <div class="tracker-header">
+          <div class="tracker-header-left">
+            <span class="pulse-indicator"></span>
+            <h3 class="tracker-title">Aktivitas Laporan Terbaru</h3>
+          </div>
+          <button @click="loadRecentReports" class="refresh-btn" :disabled="isLoading">
+            {{ isLoading ? '🔄' : 'Refresh' }}
+          </button>
         </div>
-        <button @click="loadRecentReports" class="refresh-btn" :disabled="isLoading">
-          {{ isLoading ? '🔄' : 'Refresh' }}
-        </button>
+
+        <div v-if="isLoading" class="tracker-loading">
+          <div class="mini-spinner"></div>
+          <span>Memperbarui aktivitas...</span>
+        </div>
+        <div v-else-if="recentReports.length === 0" class="tracker-empty">
+          Belum ada aktivitas laporan armada terbaru hari ini.
+        </div>
+        <div v-else class="tracker-grid">
+          <div v-for="report in recentReports" :key="report.id" class="tracker-item">
+            <div class="tracker-item-header">
+              <span class="tracker-bus">🚍 {{ report.nama_bus }}</span>
+              <span class="tracker-time">{{ formatTimeAgo(report.created_at) }}</span>
+            </div>
+            <p class="tracker-desc">{{ truncateText(report.deskripsi_kerusakan, 80) }}</p>
+            <div class="tracker-footer">
+              <span :class="['badge', 'badge-mini', getStatusBadgeClass(report.status)]">
+                {{ report.status }}
+              </span>
+              <span class="tracker-sopir">Oleh: {{ report.nama_sopir || 'Sopir' }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div v-if="isLoading" class="tracker-loading">
-        <div class="mini-spinner"></div>
-        <span>Memperbarui aktivitas...</span>
+      <!-- Portal Menu Grid (Sesuai Gambar 2) -->
+      <div class="portal-grid">
+        <!-- Card 1: Lapor Kerusakan (Sopir) -->
+        <NuxtLink to="/sopir" class="portal-card">
+          <div class="portal-header">
+            <div class="portal-icon-wrapper sopir-color">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            </div>
+            <span class="role-badge">Untuk Sopir</span>
+          </div>
+          <h3 class="portal-card-title">Lapor Kerusakan</h3>
+          <p class="portal-card-desc">Formulir input kerusakan bus bagi pengemudi di jalan. Lengkap dengan kompresi foto otomatis untuk upload cepat.</p>
+          <div class="portal-card-action">
+            <span>Buka Formulir Lapor</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </NuxtLink>
+
+        <!-- Card 2: Dashboard Verifikasi (Operasional) -->
+        <NuxtLink to="/operasional" class="portal-card">
+          <div class="portal-header">
+            <div class="portal-icon-wrapper operasional-color">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 10"/></svg>
+            </div>
+            <span class="role-badge">Untuk Operasional</span>
+          </div>
+          <h3 class="portal-card-title">Dashboard Verifikasi</h3>
+          <p class="portal-card-desc">Validasi laporan kerusakan dari pengemudi. Tugaskan mekanik lapangan untuk memproses perbaikan atau tolak laporan yang tidak valid.</p>
+          <div class="portal-card-action">
+            <span>Masuk Dashboard</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </NuxtLink>
+
+        <!-- Card 3: Portal Tugas Mekanik (Mekanik) -->
+        <NuxtLink to="/mekanik" class="portal-card">
+          <div class="portal-header">
+            <div class="portal-icon-wrapper mekanik-color">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            </div>
+            <span class="role-badge">Untuk Mekanik</span>
+          </div>
+          <h3 class="portal-card-title">Portal Tugas Mekanik</h3>
+          <p class="portal-card-desc">Lihat daftar penugasan perbaikan yang tertuju kepada Anda. Unggah dokumentasi pasca penanganan awal dan hasil akhir perbaikan.</p>
+          <div class="portal-card-action">
+            <span>Buka Tugas Perbaikan</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </NuxtLink>
+
+        <!-- Card 4: Portal Admin & Korlay (Admin & Korlay) -->
+        <NuxtLink to="/admin" class="portal-card">
+          <div class="portal-header">
+            <div class="portal-icon-wrapper admin-lock-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <span class="role-badge">Admin & Korlay</span>
+          </div>
+          <h3 class="portal-card-title">Portal Admin & Korlay</h3>
+          <p class="portal-card-desc">Kelola kredensial pengguna (Admin), pantau analitik kerusakan armada secara real-time (Korlay), dan ekspor laporan PDF bulanan resmi.</p>
+          <div class="portal-card-action">
+            <span>Masuk Dashboard</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </NuxtLink>
       </div>
-      <div v-else-if="recentReports.length === 0" class="tracker-empty">
-        📭 Belum ada laporan masuk di sistem.
-      </div>
-      <div v-else class="tracker-grid">
-        <div v-for="rep in recentReports" :key="rep.id" class="tracker-item">
-          <div class="tracker-item-header">
-            <span class="tracker-bus">🚌 {{ rep.no_armada }}</span>
-            <span class="tracker-time">{{ formatTimeAgo(rep.timestamp_lapor) }}</span>
-          </div>
-          <p class="tracker-desc">{{ truncateText(rep.deskripsi, 75) }}</p>
-          <div class="tracker-footer">
-            <span class="badge badge-mini" :class="getStatusBadgeClass(rep.status)">{{ rep.status }}</span>
-            <span class="tracker-sopir">Sopir: {{ rep.nama_sopir }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Portal Cards Grid -->
-    <div class="portal-grid">
-      <!-- Sopir Card -->
-      <NuxtLink to="/sopir" class="portal-card group">
-        <div class="portal-header">
-          <div class="portal-icon-wrapper sopir-color">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-          </div>
-          <span class="role-badge">Untuk Sopir</span>
-        </div>
-        <h2 class="portal-card-title">Lapor Kerusakan</h2>
-        <p class="portal-card-desc">
-          Formulir input kerusakan bus bagi pengemudi di jalan. Lengkap dengan kompresi foto otomatis untuk upload cepat.
-        </p>
-        <span class="portal-card-action">
-          Buka Formulir Lapor &rarr;
-        </span>
-      </NuxtLink>
-
-      <!-- Operasional Card -->
-      <NuxtLink to="/operasional" class="portal-card group">
-        <div class="portal-header">
-          <div class="portal-icon-wrapper operasional-color">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          </div>
-          <span class="role-badge">Untuk Operasional</span>
-        </div>
-        <h2 class="portal-card-title">Dashboard Verifikasi</h2>
-        <p class="portal-card-desc">
-          Validasi laporan kerusakan dari pengemudi. Tugaskan mekanik lapangan untuk memproses perbaikan atau tolak laporan yang tidak valid.
-        </p>
-        <span class="portal-card-action">
-          Masuk Dashboard &rarr;
-        </span>
-      </NuxtLink>
-
-      <!-- Mekanik Card -->
-      <NuxtLink to="/mekanik" class="portal-card group">
-        <div class="portal-header">
-          <div class="portal-icon-wrapper mekanik-color">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </div>
-          <span class="role-badge">Untuk Mekanik</span>
-        </div>
-        <h2 class="portal-card-title">Portal Tugas Mekanik</h2>
-        <p class="portal-card-desc">
-          Lihat daftar penugasan perbaikan yang tertuju kepada Anda. Unggah dokumentasi pasca penanganan awal dan hasil akhir perbaikan.
-        </p>
-        <span class="portal-card-action">
-          Buka Tugas Perbaikan &rarr;
-        </span>
-      </NuxtLink>
-
-      <!-- Admin Card -->
-      <NuxtLink to="/admin" class="portal-card group">
-        <div class="portal-header">
-          <div class="portal-icon-wrapper rekap-color">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <span class="role-badge">Admin & Korlay</span>
-        </div>
-        <h2 class="portal-card-title">Portal Admin & Korlay</h2>
-        <p class="portal-card-desc">
-          Kelola kredensial pengguna (Admin), pantau analitik kerusakan armada secara real-time (Korlay), dan ekspor laporan PDF bulanan resmi.
-        </p>
-        <span class="portal-card-action">
-          Masuk Dashboard &rarr;
-        </span>
-      </NuxtLink>
     </div>
   </div>
 </template>
@@ -242,7 +245,6 @@ const loadRecentReports = async () => {
   isLoading.value = true
   try {
     const list = await fetchReports()
-    // Ambil maksimal 3 laporan teratas
     recentReports.value = list.slice(0, 3)
   } catch (err) {
     console.error('Failed to load recent reports:', err)
@@ -251,7 +253,6 @@ const loadRecentReports = async () => {
   }
 }
 
-// Javascript frame update simulation loop
 const updateFrame = () => {
   const L = pathLength.value
   if (!L || !roadPathRef.value) {
@@ -259,53 +260,42 @@ const updateFrame = () => {
     return
   }
 
-  // The stop line is situated right before the traffic light
   const stopLineDist = stopLineDistValue.value
 
   buses.value.forEach((bus) => {
     let targetSpeed = bus.speed
 
-    // 1. Check Traffic Light: Red Light halts the bus at stop line
     if (!isGreen.value) {
       let distToStop = stopLineDist - bus.dist
-      // Adjust wrapping logic
       if (distToStop < -L / 2) distToStop += L
-      
-      // If within 50 pixels behind the stop line
       if (distToStop > 5 && distToStop < 55) {
         targetSpeed = 0
       }
     }
 
-    // 2. Collision Avoidance: stops if too close to the bus in front
     buses.value.forEach((otherBus) => {
       if (otherBus.id === bus.id) return
 
       let gap = otherBus.dist - bus.dist
-      if (gap < 0) gap += L // wrap around
+      if (gap < 0) gap += L
 
-      // If the other bus is ahead and within safety margins
       if (gap > 0 && gap < 60) {
         if (otherBus.currentSpeed === 0 || gap < 42) {
           targetSpeed = 0
         } else {
-          // Slowly align speed to avoid collision
           targetSpeed = Math.min(targetSpeed, otherBus.currentSpeed * 0.9)
         }
       }
     })
 
-    // 3. Smooth Acceleration and Braking Deceleration
     if (bus.currentSpeed < targetSpeed) {
       bus.currentSpeed = Math.min(bus.currentSpeed + 0.06, targetSpeed)
     } else if (bus.currentSpeed > targetSpeed) {
       bus.currentSpeed = Math.max(bus.currentSpeed - 0.12, targetSpeed)
     }
 
-    // Update path distance
     bus.dist = (bus.dist + bus.currentSpeed) % L
 
-    // Fetch SVG geometry coordinate points
     try {
       const p1 = roadPathRef.value.getPointAtLength(bus.dist)
       const p2 = roadPathRef.value.getPointAtLength((bus.dist + 2) % L)
@@ -313,7 +303,7 @@ const updateFrame = () => {
       bus.y = p1.y
       bus.angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI)
     } catch (e) {
-      // fallback in case of errors
+      // fallback
     }
   })
 
@@ -323,19 +313,16 @@ const updateFrame = () => {
 onMounted(() => {
   loadRecentReports()
   
-  // Toggle traffic light every 5 seconds
   trafficInterval = setInterval(() => {
     isGreen.value = !isGreen.value
   }, 5000)
 
-  // Start the frame updates loop once SVG path is loaded
   if (roadPathRef.value) {
     try {
       const L = roadPathRef.value.getTotalLength()
       pathLength.value = L
       
-      // Calculate the stop line point closest to coordinate (430, 60) on the MotoGP path
-      let stopLine = L * 0.32 // fallback
+      let stopLine = L * 0.32
       let minDist = Infinity
       for (let d = 0; d < L; d += 2) {
         const p = roadPathRef.value.getPointAtLength(d)
@@ -347,7 +334,6 @@ onMounted(() => {
       }
       stopLineDistValue.value = stopLine
       
-      // Spaced out starting positions (75%, 45%, 15% of track)
       buses.value[0].dist = L * 0.75
       buses.value[1].dist = L * 0.45
       buses.value[2].dist = L * 0.15
@@ -364,7 +350,6 @@ onUnmounted(() => {
   if (animationFrameId) cancelAnimationFrame(animationFrameId)
 })
 
-// Helpers
 const truncateText = (text, limit) => {
   if (!text) return ''
   return text.length > limit ? text.substring(0, limit) + '...' : text
@@ -396,54 +381,167 @@ const formatTimeAgo = (isoString) => {
 </script>
 
 <style scoped>
-.hero-container {
-  text-align: center;
-  max-width: 800px;
-  margin: 2.5rem auto 3.5rem auto;
+.index-page {
+  position: relative;
+  width: 100%;
 }
+
+/* Hero Banner with Photorealistic Bus Background */
+.hero-banner {
+  position: relative;
+  width: 100%;
+  background-image: url('/hero-bus.jpg');
+  background-size: cover;
+  background-position: center 38%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  padding: 3.5rem 1.5rem 6.5rem 1.5rem;
+  border-bottom: none;
+}
+
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 12, 20, 0.78) 0%, rgba(15, 23, 42, 0.86) 60%, rgba(8, 12, 20, 0.96) 100%);
+  backdrop-filter: blur(1.5px);
+  pointer-events: none;
+}
+
+:root.light .hero-bg-overlay {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.88) 60%, rgba(15, 23, 42, 0.94) 100%);
+  backdrop-filter: blur(1px);
+}
+
+.hero-particles-glow {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, rgba(220, 38, 38, 0.08) 50%, transparent 80%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.35rem 0.95rem;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #22c55e;
+  animation: pulse-glow 2s infinite;
+}
+
 .hero-logo-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
+
 .hero-logo {
   height: 90px;
   width: auto;
   object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
   animation: float 4s ease-in-out infinite;
 }
 
 .hero-title {
   font-size: 2.75rem;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.22;
   margin-bottom: 1.25rem;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--text-primary) 30%, var(--primary) 100%);
+  background: linear-gradient(135deg, #ffffff 40%, #fb923c 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-.hero-desc {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Curvy Road Animation */
+.hero-desc {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  margin-bottom: 2rem;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Curvy Road Animation Container on Glass Plate */
 .road-animation-container {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   margin: 1.5rem auto 0 auto;
   height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
 }
+
 .road-svg {
   width: 100%;
   height: auto;
   overflow: visible;
+}
+
+/* SVG Wave Divider at Bottom of Hero */
+.hero-wave-divider {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.wave-svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 60px;
+}
+
+/* Main Content Container Flow */
+.main-content-wrapper {
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 4;
 }
 
 /* Live Report Tracker Card */
@@ -456,7 +554,8 @@ const formatTimeAgo = (isoString) => {
   padding: 1.5rem 2rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(16px);
 }
 .tracker-header {
   display: flex;
@@ -603,6 +702,7 @@ const formatTimeAgo = (isoString) => {
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 }
 
 .portal-card:hover {
@@ -636,27 +736,33 @@ const formatTimeAgo = (isoString) => {
   border: 1px solid var(--border-glass);
 }
 
-.sopir-color { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.operasional-color { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.mekanik-color { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.rekap-color { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.sopir-color { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+.operasional-color { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+.mekanik-color { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
+/* Admin & Korlay Lock Icon - Soft purple default, solid purple on hover */
+.admin-lock-icon {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
 
 .portal-card:hover .portal-icon-wrapper.sopir-color { background: #3b82f6; color: white; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); }
 .portal-card:hover .portal-icon-wrapper.operasional-color { background: #f59e0b; color: white; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); }
 .portal-card:hover .portal-icon-wrapper.mekanik-color { background: #10b981; color: white; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); }
-.portal-card:hover .portal-icon-wrapper.rekap-color { background: #8b5cf6; color: white; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35); }
+.portal-card:hover .portal-icon-wrapper.admin-lock-icon { background: #7c3aed; color: white; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45); }
 
 .portal-card-title {
   font-size: 1.35rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
   color: var(--text-primary);
+  line-height: 1.3;
 }
 
 .portal-card-desc {
   color: var(--text-secondary);
   font-size: 0.92rem;
-  line-height: 1.5;
+  line-height: 1.55;
   margin-bottom: 1.5rem;
   flex: 1;
 }
@@ -667,7 +773,7 @@ const formatTimeAgo = (isoString) => {
   color: var(--primary);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
   transition: var(--transition-fast);
 }
 
@@ -687,17 +793,33 @@ const formatTimeAgo = (isoString) => {
   100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
+  .hero-banner {
+    padding: 2.5rem 1rem 4.5rem 1rem;
+    background-position: center 30%;
+  }
   .hero-title {
-    font-size: 2.25rem;
+    font-size: 2.1rem;
+  }
+  .hero-desc {
+    font-size: 0.98rem;
   }
   .live-tracker-card {
     padding: 1.25rem;
+  }
+  .wave-svg {
+    height: 40px;
   }
 }
 </style>
