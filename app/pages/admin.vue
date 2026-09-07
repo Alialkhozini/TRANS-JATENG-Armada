@@ -1050,19 +1050,28 @@ const generatePDFReport = async () => {
     const { jsPDF } = await import('jspdf')
     const { default: autoTable } = await import('jspdf-autotable')
 
-    const doc = new jsPDF()
+    // Gunakan format A4 Landscape (297mm x 210mm) agar tabel 8 kolom proporsional & rapi
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    })
 
+    // Judul Kop Dokumen
     doc.setFont('Helvetica', 'bold')
-    doc.setFontSize(16)
-    doc.text('LAPORAN BULANAN KERUSAKAN ARMADA TRANS JATENG', 105, 20, { align: 'center' })
+    doc.setFontSize(15)
+    doc.setTextColor(15, 23, 42)
+    doc.text('LAPORAN BULANAN KERUSAKAN ARMADA TRANS JATENG', 148.5, 18, { align: 'center' })
     
     doc.setFont('Helvetica', 'normal')
-    doc.setFontSize(11)
-    doc.text('Periode: ' + monthNames[pdfExport.month] + ' ' + pdfExport.year, 105, 27, { align: 'center' })
+    doc.setFontSize(10.5)
+    doc.setTextColor(100, 116, 139)
+    doc.text('Periode: ' + monthNames[pdfExport.month] + ' ' + pdfExport.year, 148.5, 25, { align: 'center' })
     
+    // Garis Aksen Oranye Khas Trans Jateng
     doc.setDrawColor(249, 115, 22)
-    doc.setLineWidth(1)
-    doc.line(14, 32, 196, 32)
+    doc.setLineWidth(0.8)
+    doc.line(14, 29, 283, 29)
 
     const tableBody = filtered.map((r, index) => [
       index + 1,
@@ -1076,48 +1085,63 @@ const generatePDFReport = async () => {
     ])
 
     autoTable(doc, {
-      startY: 40,
-      head: [['No', 'ID Laporan', 'Tgl Rusak', 'No Armada', 'Pelapor (Sopir)', 'Kerusakan', 'Mekanik', 'Status']],
+      startY: 34,
+      margin: { left: 14, right: 14 },
+      head: [['No', 'ID Laporan', 'Tgl Rusak', 'No Armada', 'Pelapor (Sopir)', 'Deskripsi Kerusakan', 'Mekanik', 'Status']],
       body: tableBody,
+      theme: 'grid',
       headStyles: {
         fillColor: [15, 23, 42],
         textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      styles: {
+        fontStyle: 'bold',
         fontSize: 9,
+        halign: 'center',
+        valign: 'middle',
         cellPadding: 3
       },
+      styles: {
+        fontSize: 8.5,
+        cellPadding: 2.5,
+        overflow: 'linebreak',
+        valign: 'middle',
+        textColor: [30, 41, 59]
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252]
+      },
       columnStyles: {
-        0: { width: 8 },
-        1: { width: 25 },
-        2: { width: 22 },
-        3: { width: 20 },
-        4: { width: 25 },
-        5: { width: 50 },
-        6: { width: 25 },
-        7: { width: 25 }
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 32, halign: 'center' },
+        2: { cellWidth: 24, halign: 'center' },
+        3: { cellWidth: 24, halign: 'center', fontStyle: 'bold' },
+        4: { cellWidth: 32 },
+        5: { cellWidth: 77 },
+        6: { cellWidth: 35 },
+        7: { cellWidth: 35, halign: 'center' }
       }
     })
 
-    const finalY = doc.previousAutoTable.finalY + 20
+    const lastTableY = doc.lastAutoTable?.finalY || 100
+    const finalY = lastTableY + 15
     
-    let sigDoc = doc
-    if (finalY > 240) {
+    let currentY = finalY
+    if (finalY > 165) {
       doc.addPage()
-      sigDoc = doc
+      currentY = 25
     }
 
-    const currentY = sigDoc.previousAutoTable.finalY > 240 ? 30 : finalY
-
-    sigDoc.setFontSize(10)
-    sigDoc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 140, currentY)
-    sigDoc.text('Mengetahui,', 140, currentY + 7)
-    sigDoc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 140, currentY + 12)
+    doc.setFont('Helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(30, 41, 59)
+    doc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 225, currentY, { align: 'center' })
+    doc.text('Mengetahui,', 225, currentY + 6, { align: 'center' })
+    doc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 225, currentY + 11, { align: 'center' })
     
-    sigDoc.line(140, currentY + 32, 190, currentY + 32)
-    sigDoc.setFont('Helvetica', 'bold')
-    sigDoc.text('( ______________________ )', 140, currentY + 37)
+    doc.setDrawColor(148, 163, 184)
+    doc.setLineWidth(0.5)
+    doc.line(195, currentY + 30, 255, currentY + 30)
+    doc.setFont('Helvetica', 'bold')
+    doc.text('( ______________________ )', 225, currentY + 35, { align: 'center' })
 
     const fileName = 'Laporan_Kerusakan_' + monthNames[pdfExport.month] + '_' + pdfExport.year + '.pdf'
     doc.save(fileName)
