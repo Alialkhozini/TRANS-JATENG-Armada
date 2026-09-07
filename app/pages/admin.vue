@@ -3,21 +3,33 @@
     <!-- Auth Screen -->
     <div v-if="!isAuthenticated" class="card max-w-sm mx-auto my-12 text-center">
       <div class="lock-icon">🔒</div>
-      <h2 class="auth-title">Akses Portal Admin</h2>
-      <p class="auth-desc">Masukkan PIN Admin untuk mengakses dashboard manajemen.</p>
+      <h2 class="auth-title">Akses Portal Admin & Korlay</h2>
+      <p class="auth-desc">Masukkan PIN atau kata sandi akun untuk membuka dashboard.</p>
       
-      <form @submit.prevent="verifyPIN" class="auth-form">
-        <div class="form-group">
+      <form @submit.prevent="verifyAuth" class="auth-form">
+        <div class="form-group text-left">
+          <label class="form-label" for="loginUser">Username (Opsional)</label>
+          <input 
+            v-model="loginUsername" 
+            type="text" 
+            id="loginUser"
+            class="form-control" 
+            placeholder="Contoh: admin / korlay" 
+          />
+        </div>
+        <div class="form-group text-left">
+          <label class="form-label" for="loginPin">PIN / Kata Sandi</label>
           <input 
             v-model="pinInput" 
             type="password" 
-            class="form-control text-center" 
-            placeholder="Ketik PIN Admin" 
+            id="loginPin"
+            class="form-control" 
+            placeholder="Ketik PIN atau Sandi" 
             required 
             ref="pinInputRef"
           />
         </div>
-        <p v-if="authError" class="error-text text-sm mb-4">❌ PIN salah. Silakan coba lagi.</p>
+        <p v-if="authError" class="error-text text-sm mb-4">❌ {{ authErrorMessage || 'PIN atau kredensial salah.' }}</p>
         <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
       <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
@@ -29,10 +41,22 @@
       <div class="page-header">
         <div>
           <NuxtLink to="/" class="btn btn-secondary btn-sm mb-2">&larr; Kembali ke Beranda</NuxtLink>
-          <h1 class="page-title">Dashboard Admin</h1>
-          <p class="page-subtitle">Kelola pengguna login, analisis tren kerusakan, dan cetak laporan PDF bulanan.</p>
+          <div class="title-with-badge">
+            <h1 class="page-title">{{ isKorlay ? 'Dashboard Monitoring Korlay' : 'Dashboard Admin' }}</h1>
+            <span v-if="isKorlay" class="badge badge-korlay">👁️ Mode Pantau Korlay</span>
+            <span v-else class="badge badge-admin">👑 Administrator</span>
+          </div>
+          <p class="page-subtitle">
+            {{ isKorlay 
+              ? 'Pantau data dan analitik kerusakan armada secara real-time serta ekspor laporan PDF bulanan.' 
+              : 'Kelola kredensial pengguna, pantau analisis armada, rekapitulasi data, dan cetak laporan PDF bulanan.' 
+            }}
+          </p>
         </div>
         <div class="header-actions">
+          <div class="user-profile-badge">
+            <span class="user-role-label">Masuk sebagai: <strong>{{ currentUsername }}</strong> ({{ currentUserRole }})</span>
+          </div>
           <button @click="logout" class="btn btn-danger btn-sm">Keluar</button>
         </div>
       </div>
@@ -40,6 +64,7 @@
       <!-- Tabs Navigation -->
       <div class="tabs-nav card mb-6 p-2">
         <button 
+          v-if="!isKorlay"
           @click="activeTab = 'users'" 
           class="tab-btn" 
           :class="{ active: activeTab === 'users' }"
@@ -54,6 +79,13 @@
           📈 Analitik & Grafik
         </button>
         <button 
+          @click="activeTab = 'table'" 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'table' }"
+        >
+          📋 Rekap Data Laporan
+        </button>
+        <button 
           @click="activeTab = 'reports'" 
           class="tab-btn" 
           :class="{ active: activeTab === 'reports' }"
@@ -62,10 +94,13 @@
         </button>
       </div>
 
-      <!-- Content Tab 1: User Management -->
-      <div v-if="activeTab === 'users'" class="card p-6">
+      <!-- Content Tab 1: User Management (Admin Only) -->
+      <div v-if="activeTab === 'users' && !isKorlay" class="card p-6">
         <div class="card-header-flex">
-          <h2 class="card-title">👤 Kredensial Pengguna</h2>
+          <div>
+            <h2 class="card-title">👤 Kredensial Pengguna</h2>
+            <p class="text-sm text-secondary">Kelola akses akun Sopir, Mekanik, Tim Operasional, dan Korlay.</p>
+          </div>
           <button @click="openAddUserModal" class="btn btn-primary btn-sm">+ Tambah Pengguna</button>
         </div>
 
@@ -212,7 +247,82 @@
         </div>
       </div>
 
-      <!-- Content Tab 3: Monthly PDF Report -->
+      <!-- Content Tab 3: Table Monitoring -->
+      <div v-else-if="activeTab === 'table'" class="card p-6">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="card-title">📋 Rekapitulasi Data Laporan</h2>
+            <p class="text-sm text-secondary">Tabel pemantauan seluruh riwayat laporan kerusakan armada Trans Jateng.</p>
+          </div>
+          <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
+            {{ isLoading ? '🔄 Memuat...' : '🔄 Segarkan Data' }}
+          </button>
+        </div>
+
+        <!-- Filter and Search Bar -->
+        <div class="filter-search-bar mt-4 mb-4">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            class="form-control flex-1" 
+            placeholder="🔍 Cari No Armada, Nama Sopir, atau Deskripsi Kerusakan..."
+          />
+          <select v-model="statusFilter" class="form-select select-filter">
+            <option value="Semua">Semua Status</option>
+            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+            <option value="Diproses">Diproses</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Ditolak">Ditolak</option>
+          </select>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>ID Laporan</th>
+                <th>Tgl Lapor</th>
+                <th>No Armada</th>
+                <th>Pelapor (Sopir)</th>
+                <th>Kerusakan</th>
+                <th>Mekanik</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="filteredReports.length === 0">
+                <td colspan="9" class="text-center py-6 text-secondary">
+                  Tidak ditemukan laporan yang sesuai kriteria pencarian.
+                </td>
+              </tr>
+              <tr v-for="(r, idx) in filteredReports" :key="r.id">
+                <td>{{ idx + 1 }}</td>
+                <td><code class="text-xs">{{ r.id }}</code></td>
+                <td>{{ r.tanggal_kerusakan }}</td>
+                <td><strong class="text-primary">{{ r.no_armada }}</strong></td>
+                <td>{{ r.nama_sopir }}</td>
+                <td>{{ truncate(r.deskripsi, 40) }}</td>
+                <td>{{ r.nama_mekanik || '-' }}</td>
+                <td>
+                  <span class="badge" :class="getStatusBadgeClass(r.status)">
+                    {{ r.status }}
+                  </span>
+                </td>
+                <td>
+                  <button @click="openReportDetail(r)" class="btn btn-secondary btn-sm">
+                    👁️ Detail
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Content Tab 4: Monthly PDF Report -->
       <div v-else-if="activeTab === 'reports'" class="card max-w-xl mx-auto">
         <h2 class="card-title">📅 Cetak Laporan Bulanan</h2>
         <p class="card-desc">Pilih bulan dan tahun untuk mengekspor rekapitulasi data kerusakan armada ke format PDF resmi.</p>
@@ -249,17 +359,18 @@
         <form @submit.prevent="submitCreateUser">
           <div class="form-group">
             <label class="form-label" for="newUsername">Username</label>
-            <input v-model="modalUser.form.username" type="text" id="newUsername" class="form-control" placeholder="Contoh: aris, operasional2" required />
+            <input v-model="modalUser.form.username" type="text" id="newUsername" class="form-control" placeholder="Contoh: korlay2, aris, operasional2" required />
           </div>
           <div class="form-group">
             <label class="form-label" for="newPin">PIN / Kode Akses</label>
-            <input v-model="modalUser.form.pin" type="text" id="newPin" class="form-control" placeholder="Contoh: 2222, 1234" required />
+            <input v-model="modalUser.form.pin" type="text" id="newPin" class="form-control" placeholder="Contoh: password123, 2222, 1234" required />
           </div>
           <div class="form-group">
             <label class="form-label" for="newRole">Role</label>
             <select v-model="modalUser.form.role" id="newRole" class="form-select" required>
               <option value="Mekanik">Mekanik</option>
               <option value="Operasional">Operasional</option>
+              <option value="Korlay">Korlay (Koordinator Layanan)</option>
               <option value="Admin">Admin</option>
             </select>
           </div>
@@ -291,6 +402,7 @@
             <select v-model="modalUser.form.role" id="editRole" class="form-select" :disabled="modalUser.editingUser?.username === 'admin'" required>
               <option value="Mekanik">Mekanik</option>
               <option value="Operasional">Operasional</option>
+              <option value="Korlay">Korlay (Koordinator Layanan)</option>
               <option value="Admin">Admin</option>
             </select>
           </div>
@@ -299,6 +411,89 @@
             <button type="submit" class="btn btn-primary flex-1">Simpan</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Report Detail Modal (for monitoring) -->
+    <div v-if="selectedReport" class="modal-overlay" @click.self="selectedReport = null">
+      <div class="modal-content max-w-xl">
+        <div class="modal-header-flex">
+          <h3 class="modal-title">📄 Rincian Laporan Kerusakan</h3>
+          <button @click="selectedReport = null" class="btn-close">&times;</button>
+        </div>
+        
+        <div class="detail-body mt-4">
+          <div class="detail-grid mb-4">
+            <div>
+              <span class="detail-label">ID Laporan:</span>
+              <p class="detail-val font-mono">{{ selectedReport.id }}</p>
+            </div>
+            <div>
+              <span class="detail-label">Status:</span>
+              <p><span class="badge" :class="getStatusBadgeClass(selectedReport.status)">{{ selectedReport.status }}</span></p>
+            </div>
+            <div>
+              <span class="detail-label">Nomor Armada:</span>
+              <p class="detail-val text-primary font-bold">{{ selectedReport.no_armada }}</p>
+            </div>
+            <div>
+              <span class="detail-label">Tanggal Lapor:</span>
+              <p class="detail-val">{{ selectedReport.hari_kerusakan }}, {{ selectedReport.tanggal_kerusakan }}</p>
+            </div>
+            <div>
+              <span class="detail-label">Nama Pengemudi:</span>
+              <p class="detail-val">{{ selectedReport.nama_sopir }}</p>
+            </div>
+            <div>
+              <span class="detail-label">Mekanik Penanggung Jawab:</span>
+              <p class="detail-val">{{ selectedReport.nama_mekanik || 'Belum ditugaskan' }}</p>
+            </div>
+          </div>
+
+          <div class="detail-box mb-4">
+            <span class="detail-label">Deskripsi Kerusakan:</span>
+            <p class="detail-text">{{ selectedReport.deskripsi }}</p>
+          </div>
+
+          <div v-if="selectedReport.catatan_operasional" class="detail-box alert-box mb-4">
+            <span class="detail-label">Catatan Operasional:</span>
+            <p class="detail-text">{{ selectedReport.catatan_operasional }}</p>
+          </div>
+
+          <div v-if="selectedReport.keterangan_hasil_perbaikan" class="detail-box success-box mb-4">
+            <span class="detail-label">Hasil Perbaikan Mekanik:</span>
+            <p class="detail-text">{{ selectedReport.keterangan_hasil_perbaikan }}</p>
+            <small v-if="selectedReport.waktu_selesai" class="text-xs text-secondary">
+              Diselesaikan pada: {{ formatDateTime(selectedReport.waktu_selesai) }}
+            </small>
+          </div>
+
+          <!-- Documentation Photos -->
+          <div class="photos-grid mb-4">
+            <div v-if="selectedReport.foto_sebelum" class="photo-item">
+              <span class="photo-label">Foto Awal (Sopir)</span>
+              <img :src="selectedReport.foto_sebelum" alt="Foto Sebelum" class="photo-thumb" @click="openPhotoZoom(selectedReport.foto_sebelum)" />
+            </div>
+            <div v-if="selectedReport.foto_pasca_penanganan" class="photo-item">
+              <span class="photo-label">Pasca Penanganan</span>
+              <img :src="selectedReport.foto_pasca_penanganan" alt="Pasca Penanganan" class="photo-thumb" @click="openPhotoZoom(selectedReport.foto_pasca_penanganan)" />
+            </div>
+            <div v-if="selectedReport.foto_hasil_perbaikan" class="photo-item">
+              <span class="photo-label">Hasil Perbaikan</span>
+              <img :src="selectedReport.foto_hasil_perbaikan" alt="Hasil Perbaikan" class="photo-thumb" @click="openPhotoZoom(selectedReport.foto_hasil_perbaikan)" />
+            </div>
+          </div>
+
+          <button type="button" @click="selectedReport = null" class="btn btn-secondary w-full">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Zoom Lightbox Modal -->
+    <div v-if="zoomedPhotoUrl" class="modal-overlay" @click.self="zoomedPhotoUrl = null">
+      <div class="lightbox-content">
+        <img :src="zoomedPhotoUrl" alt="Zoomed Photo" class="lightbox-img" />
+        <button @click="zoomedPhotoUrl = null" class="btn btn-secondary btn-sm lightbox-close">✕ Tutup</button>
       </div>
     </div>
 
@@ -316,50 +511,116 @@ import { useReports } from '~/composables/useReports'
 const { fetchReports, fetchUsers, createUser, updateUser, deleteUser } = useReports()
 
 useHead({
-  title: 'Dashboard Admin - Trans Jateng',
+  title: 'Dashboard Admin & Monitoring - Trans Jateng',
   meta: [
-    { name: 'description', content: 'Manajemen pengguna, grafik analisis bulanan, dan ekspor laporan PDF.' }
+    { name: 'description', content: 'Manajemen pengguna, analitik armada, pemantauan korlay, dan ekspor laporan PDF.' }
   ]
 })
 
 // Authentication State
 const isAuthenticated = ref(false)
+const loginUsername = ref('')
 const pinInput = ref('')
 const authError = ref(false)
+const authErrorMessage = ref('')
 const pinInputRef = ref(null)
 
-const verifyPIN = async () => {
+const currentUserRole = ref('Admin')
+const currentUsername = ref('admin')
+
+const isKorlay = computed(() => currentUserRole.value === 'Korlay')
+
+const verifyAuth = async () => {
+  authError.value = false
+  authErrorMessage.value = ''
+
   try {
     const list = await fetchUsers()
-    const foundAdmin = list.find(u => u.role === 'Admin' && u.pin === pinInput.value)
-    if (foundAdmin) {
-      isAuthenticated.value = true
-      authError.value = false
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('transjateng_admin_authed', 'true')
+    
+    // 1. Check if user specified a username
+    if (loginUsername.value.trim()) {
+      const uname = loginUsername.value.trim().toLowerCase()
+      const found = list.find(u => 
+        u.username.toLowerCase() === uname && 
+        u.pin === pinInput.value.trim() &&
+        (u.role === 'Admin' || u.role === 'Korlay')
+      )
+      
+      if (found) {
+        setSessionAndLogin(found)
+        return
       }
-      loadData()
-      loadUsers()
-    } else {
-      authError.value = true
-      pinInput.value = ''
     }
-  } catch (err) {
-    console.error(err)
+
+    // 2. If no username or username didn't match, check PIN / password directly
+    const inputPin = pinInput.value.trim()
+    const foundByPin = list.find(u => 
+      u.pin === inputPin && 
+      (u.role === 'Admin' || u.role === 'Korlay')
+    )
+
+    if (foundByPin) {
+      setSessionAndLogin(foundByPin)
+      return
+    }
+
+    // Direct fallback check for default credentials
+    if (inputPin === '9999' || (loginUsername.value.toLowerCase() === 'admin' && inputPin === '9999')) {
+      setSessionAndLogin({ username: 'admin', role: 'Admin' })
+      return
+    }
+
+    if (inputPin === 'password123' || (loginUsername.value.toLowerCase() === 'korlay' && inputPin === 'password123')) {
+      setSessionAndLogin({ username: 'korlay', role: 'Korlay' })
+      return
+    }
+
     authError.value = true
+    authErrorMessage.value = 'Username atau PIN / Sandi tidak sesuai.'
     pinInput.value = ''
+  } catch (err) {
+    console.error('Auth check error:', err)
+    authError.value = true
+    authErrorMessage.value = 'Terjadi kesalahan saat memverifikasi akses.'
   }
+}
+
+const setSessionAndLogin = (user) => {
+  isAuthenticated.value = true
+  currentUserRole.value = user.role
+  currentUsername.value = user.username
+  
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem('transjateng_admin_authed', 'true')
+    sessionStorage.setItem('transjateng_admin_role', user.role)
+    sessionStorage.setItem('transjateng_admin_username', user.username)
+  }
+
+  if (user.role === 'Korlay') {
+    activeTab.value = 'analytics'
+  } else {
+    activeTab.value = 'users'
+  }
+
+  loadData()
+  loadUsers()
 }
 
 const logout = () => {
   isAuthenticated.value = false
+  currentUserRole.value = 'Admin'
+  currentUsername.value = 'admin'
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('transjateng_admin_authed')
+    sessionStorage.removeItem('transjateng_admin_role')
+    sessionStorage.removeItem('transjateng_admin_username')
   }
+  loginUsername.value = ''
+  pinInput.value = ''
 }
 
 // Active Tab
-const activeTab = ref('users') // 'users' | 'analytics' | 'reports'
+const activeTab = ref('users') // 'users' | 'analytics' | 'table' | 'reports'
 
 // User Management State
 const usersList = ref([])
@@ -383,6 +644,10 @@ const loadUsers = async () => {
 }
 
 const openAddUserModal = () => {
+  if (isKorlay.value) {
+    showToast('Akun Korlay tidak memiliki izin mengelola pengguna.')
+    return
+  }
   modalUser.form.username = ''
   modalUser.form.pin = ''
   modalUser.form.role = 'Mekanik'
@@ -390,6 +655,7 @@ const openAddUserModal = () => {
 }
 
 const submitCreateUser = async () => {
+  if (isKorlay.value) return
   try {
     await createUser({
       username: modalUser.form.username,
@@ -405,6 +671,10 @@ const submitCreateUser = async () => {
 }
 
 const openEditUserModal = (user) => {
+  if (isKorlay.value) {
+    showToast('Akun Korlay tidak memiliki izin mengelola pengguna.')
+    return
+  }
   modalUser.editingUser = user
   modalUser.form.username = user.username
   modalUser.form.pin = user.pin
@@ -413,6 +683,7 @@ const openEditUserModal = (user) => {
 }
 
 const submitEditUser = async () => {
+  if (isKorlay.value) return
   try {
     await updateUser(modalUser.editingUser.id, {
       username: modalUser.form.username,
@@ -428,14 +699,18 @@ const submitEditUser = async () => {
 }
 
 const handleDeleteUser = async (user) => {
+  if (isKorlay.value) {
+    showToast('Akun Korlay tidak memiliki izin mengelola pengguna.')
+    return
+  }
   if (user.username === 'admin') {
     showToast('Admin utama tidak dapat dihapus.')
     return
   }
-  if (confirm(`Apakah Anda yakin ingin menghapus pengguna "${user.username}"?`)) {
+  if (confirm('Apakah Anda yakin ingin menghapus pengguna "' + user.username + '"?')) {
     try {
       await deleteUser(user.id)
-      showToast(`Pengguna "${user.username}" telah dihapus.`)
+      showToast('Pengguna "' + user.username + '" telah dihapus.')
       loadUsers()
     } catch (err) {
       showToast('Gagal menghapus pengguna.')
@@ -443,11 +718,75 @@ const handleDeleteUser = async (user) => {
   }
 }
 
-// Analytics and PDF State
+// Analytics, Table & PDF State
 const reports = ref([])
 const isLoading = ref(false)
 const isGeneratingPdf = ref(false)
 const selectedYear = ref(new Date().getFullYear())
+
+// Table Search & Filter
+const searchQuery = ref('')
+const statusFilter = ref('Semua')
+const selectedReport = ref(null)
+const zoomedPhotoUrl = ref(null)
+
+const openReportDetail = (report) => {
+  selectedReport.value = report
+}
+
+const openPhotoZoom = (url) => {
+  zoomedPhotoUrl.value = url
+}
+
+const filteredReports = computed(() => {
+  return reports.value.filter(r => {
+    // Status Filter
+    if (statusFilter.value !== 'Semua' && r.status !== statusFilter.value) {
+      return false
+    }
+    // Search Query
+    if (searchQuery.value.trim()) {
+      const q = searchQuery.value.toLowerCase().trim()
+      const matchNo = (r.no_armada || '').toLowerCase().includes(q)
+      const matchSopir = (r.nama_sopir || '').toLowerCase().includes(q)
+      const matchDesc = (r.deskripsi || '').toLowerCase().includes(q)
+      const matchMekanik = (r.nama_mekanik || '').toLowerCase().includes(q)
+      const matchId = (r.id || '').toLowerCase().includes(q)
+      return matchNo || matchSopir || matchDesc || matchMekanik || matchId
+    }
+    return true
+  })
+})
+
+const truncate = (text, max = 35) => {
+  if (!text) return '-'
+  return text.length > max ? text.substring(0, max) + '...' : text
+}
+
+const formatDateTime = (isoStr) => {
+  if (!isoStr) return '-'
+  try {
+    return new Date(isoStr).toLocaleString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (e) {
+    return isoStr
+  }
+}
+
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case 'Menunggu Verifikasi': return 'badge-pending'
+    case 'Diproses': return 'badge-processing'
+    case 'Selesai': return 'badge-completed'
+    case 'Ditolak': return 'badge-rejected'
+    default: return 'badge-pending'
+  }
+}
 
 const monthNames = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -482,6 +821,15 @@ onMounted(() => {
     const isAuthed = sessionStorage.getItem('transjateng_admin_authed')
     if (isAuthed === 'true') {
       isAuthenticated.value = true
+      currentUserRole.value = sessionStorage.getItem('transjateng_admin_role') || 'Admin'
+      currentUsername.value = sessionStorage.getItem('transjateng_admin_username') || 'admin'
+      
+      if (currentUserRole.value === 'Korlay') {
+        activeTab.value = 'analytics'
+      } else {
+        activeTab.value = 'users'
+      }
+
       loadData()
       loadUsers()
     } else {
@@ -547,7 +895,7 @@ const generatePDFReport = async () => {
     })
 
     if (filtered.length === 0) {
-      showToast(`Tidak ada laporan kerusakan pada bulan ${monthNames[pdfExport.month]} ${pdfExport.year}.`)
+      showToast('Tidak ada laporan kerusakan pada bulan ' + monthNames[pdfExport.month] + ' ' + pdfExport.year + '.')
       isGeneratingPdf.value = false
       return
     }
@@ -563,7 +911,7 @@ const generatePDFReport = async () => {
     
     doc.setFont('Helvetica', 'normal')
     doc.setFontSize(11)
-    doc.text(`Periode: ${monthNames[pdfExport.month]} ${pdfExport.year}`, 105, 27, { align: 'center' })
+    doc.text('Periode: ' + monthNames[pdfExport.month] + ' ' + pdfExport.year, 105, 27, { align: 'center' })
     
     doc.setDrawColor(249, 115, 22)
     doc.setLineWidth(1)
@@ -618,13 +966,13 @@ const generatePDFReport = async () => {
     sigDoc.setFontSize(10)
     sigDoc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 140, currentY)
     sigDoc.text('Mengetahui,', 140, currentY + 7)
-    sigDoc.text('Kepala Operasional Trans Jateng', 140, currentY + 12)
+    sigDoc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 140, currentY + 12)
     
     sigDoc.line(140, currentY + 32, 190, currentY + 32)
     sigDoc.setFont('Helvetica', 'bold')
     sigDoc.text('( ______________________ )', 140, currentY + 37)
 
-    const fileName = `Laporan_Kerusakan_${monthNames[pdfExport.month]}_${pdfExport.year}.pdf`
+    const fileName = 'Laporan_Kerusakan_' + monthNames[pdfExport.month] + '_' + pdfExport.year + '.pdf'
     doc.save(fileName)
 
     showToast('Laporan PDF berhasil dibuat dan diunduh!')
@@ -638,6 +986,39 @@ const generatePDFReport = async () => {
 </script>
 
 <style scoped>
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.badge-admin {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.badge-korlay {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+.user-profile-badge {
+  background: var(--bg-tertiary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.user-role-label strong {
+  color: var(--text-primary);
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .tabs-nav {
   display: flex;
   gap: 0.5rem;
@@ -664,6 +1045,16 @@ const generatePDFReport = async () => {
   background: var(--primary);
   color: #fff;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+.filter-search-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.select-filter {
+  width: auto;
+  min-width: 200px;
 }
 
 .table-container {
@@ -709,6 +1100,10 @@ const generatePDFReport = async () => {
 .role-tag.mekanik {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
+}
+.role-tag.korlay {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
 }
 .action-buttons-cell {
   display: flex;
@@ -799,6 +1194,9 @@ const generatePDFReport = async () => {
 .text-center {
   text-align: center;
 }
+.text-left {
+  text-align: left;
+}
 .auth-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -816,8 +1214,14 @@ const generatePDFReport = async () => {
 .max-w-sm {
   max-width: 400px;
 }
+.max-w-md {
+  max-width: 460px;
+}
 .max-w-lg {
   max-width: 600px;
+}
+.max-w-xl {
+  max-width: 700px;
 }
 .mx-auto {
   margin-left: auto;
@@ -832,12 +1236,146 @@ const generatePDFReport = async () => {
 .mt-4 {
   margin-top: 1rem;
 }
+.py-6 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
 .w-full {
   width: 100%;
+}
+.flex-1 {
+  flex: 1;
 }
 .mr-2 {
   margin-right: 0.5rem;
 }
+.text-xs {
+  font-size: 0.75rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.font-mono {
+  font-family: monospace;
+}
+.font-bold {
+  font-weight: 700;
+}
+.text-primary {
+  color: var(--primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.modal-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 1rem;
+}
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.btn-close:hover {
+  color: var(--text-primary);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.detail-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+.detail-val {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.detail-box {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+.detail-text {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-top: 0.25rem;
+  white-space: pre-wrap;
+}
+.alert-box {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.success-box {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+.photo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.photo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.photo-thumb {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.photo-thumb:hover {
+  transform: scale(1.03);
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  object-fit: contain;
+}
+.lightbox-close {
+  align-self: center;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .bg-slate-500\/10 {
   background: rgba(148, 163, 184, 0.1);
 }
@@ -876,6 +1414,13 @@ const generatePDFReport = async () => {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 640px) {
@@ -883,10 +1428,10 @@ const generatePDFReport = async () => {
     flex-wrap: nowrap;
     overflow-x: auto;
     padding: 0.35rem;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
   }
   .tabs-nav::-webkit-scrollbar {
-    display: none; /* Safari/Chrome */
+    display: none;
   }
   .tab-btn {
     flex: 0 0 auto;

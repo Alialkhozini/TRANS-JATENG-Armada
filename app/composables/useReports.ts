@@ -24,7 +24,7 @@ export interface User {
   id: string
   username: string
   pin: string
-  role: 'Admin' | 'Operasional' | 'Mekanik'
+  role: 'Admin' | 'Operasional' | 'Mekanik' | 'Korlay'
   created_at: string
 }
 
@@ -54,15 +54,19 @@ export const useReports = () => {
   const getMockUsers = (): User[] => {
     if (typeof window === 'undefined') return []
 
-    // One-time migration to clear old users from localStorage
-    if (!localStorage.getItem('transjateng_users_cleared_daryanto')) {
-      localStorage.removeItem('transjateng_users')
-      localStorage.setItem('transjateng_users_cleared_daryanto', 'true')
-    }
-
+    // Ensure Korlay user is seeded into localStorage
     const saved = localStorage.getItem('transjateng_users')
     if (saved) {
-      return JSON.parse(saved)
+      try {
+        const parsed = JSON.parse(saved)
+        if (!parsed.some((u: User) => u.username.toLowerCase() === 'korlay')) {
+          parsed.push({ id: 'USR-6', username: 'korlay', pin: 'password123', role: 'Korlay', created_at: new Date().toISOString() })
+          localStorage.setItem('transjateng_users', JSON.stringify(parsed))
+        }
+        return parsed
+      } catch (e) {
+        console.error('Error parsing saved users:', e)
+      }
     }
     const defaultUsers: User[] = [
       { id: 'USR-1', username: 'admin', pin: '9999', role: 'Admin', created_at: new Date().toISOString() },
@@ -70,6 +74,7 @@ export const useReports = () => {
       { id: 'USR-3', username: 'aris', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
       { id: 'USR-4', username: 'daryanto', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
       { id: 'USR-5', username: 'indra', pin: '1234', role: 'Operasional', created_at: new Date().toISOString() },
+      { id: 'USR-6', username: 'korlay', pin: 'password123', role: 'Korlay', created_at: new Date().toISOString() },
     ]
     localStorage.setItem('transjateng_users', JSON.stringify(defaultUsers))
     return defaultUsers

@@ -194,11 +194,11 @@
           <div class="portal-icon-wrapper rekap-color">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
-          <span class="role-badge">Administrator</span>
+          <span class="role-badge">Admin & Korlay</span>
         </div>
-        <h2 class="portal-card-title">Portal Admin</h2>
+        <h2 class="portal-card-title">Portal Admin & Korlay</h2>
         <p class="portal-card-desc">
-          Kelola kredensial login pengguna, lihat grafik analitik frekuensi kerusakan bulanan, dan cetak laporan PDF bulanan resmi.
+          Kelola kredensial pengguna (Admin), pantau analitik kerusakan armada secara real-time (Korlay), dan ekspor laporan PDF bulanan resmi.
         </p>
         <span class="portal-card-action">
           Masuk Dashboard &rarr;
