@@ -1,2 +1,5 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+
+# Sitemap Indexing
+Sitemap: https://transjateng.my.id/sitemap.xml

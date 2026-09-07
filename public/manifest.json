@@ -1,0 +1,16 @@
+{
+  "name": "BRT Trans Jateng Armada",
+  "short_name": "Trans Jateng",
+  "description": "Sistem Pelaporan & Pemantauan Perbaikan Kerusakan Armada BRT Trans Jateng",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/id/a/a9/Logo_Trans_Jateng.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
