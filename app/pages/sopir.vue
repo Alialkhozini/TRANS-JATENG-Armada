@@ -6,15 +6,15 @@
         <img src="/bus-portal.png" alt="Bus Trans Jateng" class="portal-logo-img" />
       </div>
       <h2 class="auth-title">Akses Portal Sopir</h2>
-      <p class="auth-desc">Masukkan nomor lambung bus (1 - 14) untuk membuka formulir dan status armada.</p>
+      <p class="auth-desc">Masukkan kode untuk membuka akses portal sopir trans jateng armada.</p>
       
       <form @submit.prevent="verifyPIN" class="auth-form">
         <div class="form-group">
           <input 
             v-model="pinInput" 
             type="text" 
-            class="form-control text-center font-bold" 
-            placeholder="Contoh: 01, 14, atau Lambung 01" 
+            class="form-control text-center" 
+            placeholder="Ketik Kode / Sandi" 
             required 
             ref="pinInputRef"
           />

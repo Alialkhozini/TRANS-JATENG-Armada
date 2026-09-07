@@ -14,6 +14,7 @@
             class="form-control text-center" 
             placeholder="Username Operasional" 
             required 
+            ref="usernameInputRef"
           />
         </div>
         <div class="form-group mt-3">
@@ -296,6 +297,7 @@ useHead({
 const isAuthenticated = ref(false)
 const pinInput = ref('')
 const authError = ref(false)
+const usernameInputRef = ref(null)
 const pinInputRef = ref(null)
 
 onMounted(() => {
@@ -308,7 +310,7 @@ onMounted(() => {
       loadMechanics()
     } else {
       setTimeout(() => {
-        pinInputRef.value?.focus()
+        usernameInputRef.value?.focus()
       }, 200)
     }
   }

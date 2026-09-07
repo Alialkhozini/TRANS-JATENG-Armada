@@ -14,6 +14,7 @@
             class="form-control text-center" 
             placeholder="Username Mekanik" 
             required 
+            ref="usernameInputRef"
           />
         </div>
         <div class="form-group mt-3">
@@ -266,6 +267,7 @@ const isAuthenticated = ref(false)
 const usernameInput = ref('')
 const pinInput = ref('')
 const authError = ref(false)
+const usernameInputRef = ref(null)
 const pinInputRef = ref(null)
 const loggedInName = ref('')
 
@@ -340,7 +342,7 @@ onMounted(() => {
       loadTasks()
     } else {
       setTimeout(() => {
-        pinInputRef.value?.focus()
+        usernameInputRef.value?.focus()
       }, 200)
     }
   }

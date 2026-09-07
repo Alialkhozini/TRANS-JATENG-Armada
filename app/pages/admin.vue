@@ -8,13 +8,14 @@
       
       <form @submit.prevent="verifyAuth" class="auth-form">
         <div class="form-group text-left">
-          <label class="form-label" for="loginUser">Username (Opsional)</label>
+          <label class="form-label" for="loginUser">Username</label>
           <input 
             v-model="loginUsername" 
             type="text" 
             id="loginUser"
             class="form-control" 
             placeholder="Contoh: admin / korlay" 
+            ref="usernameInputRef"
           />
         </div>
         <div class="form-group text-left">
@@ -523,6 +524,7 @@ const loginUsername = ref('')
 const pinInput = ref('')
 const authError = ref(false)
 const authErrorMessage = ref('')
+const usernameInputRef = ref(null)
 const pinInputRef = ref(null)
 
 const currentUserRole = ref('Admin')
@@ -834,7 +836,7 @@ onMounted(() => {
       loadUsers()
     } else {
       setTimeout(() => {
-        pinInputRef.value?.focus()
+        usernameInputRef.value?.focus()
       }, 200)
     }
   }
