@@ -20,7 +20,7 @@
           />
         </div>
         <p v-if="authError" class="error-text text-sm mb-4">❌ Nomor lambung bus salah atau tidak terdaftar (1 s/d 14).</p>
-        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard Sopir</button>
+        <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
       </form>
       <NuxtLink to="/" class="btn btn-secondary w-full mt-4">&larr; Kembali ke Beranda</NuxtLink>
     </div>
