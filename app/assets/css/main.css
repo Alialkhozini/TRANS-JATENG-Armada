@@ -509,20 +509,26 @@ body.light {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 :root.light .modal-overlay {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
 }
 .modal-content {
   width: 100%;
   max-width: 500px;
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--bg-secondary);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  padding: 2rem;
+  padding: 1.75rem;
   box-shadow: var(--shadow-lg);
   position: relative;
+  margin: auto;
   animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -635,6 +641,34 @@ body.light {
     align-items: flex-start;
   }
   .container {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
   }
+  .card {
+    padding: 1.25rem 1rem;
+  }
+}
+
+/* Close Buttons Global Styling (Red on hover/active) */
+.btn-close,
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-close:hover,
+.btn-close:active,
+.btn-close:focus,
+.close-btn:hover,
+.close-btn:active,
+.close-btn:focus {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12);
+  transform: scale(1.12);
 }

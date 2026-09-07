@@ -154,12 +154,11 @@
       <!-- Tabs Navigation -->
       <div class="tabs-nav card mb-6 p-2">
         <button 
-          v-if="!isKorlay"
-          @click="activeTab = 'users'" 
+          @click="activeTab = 'table'" 
           class="tab-btn" 
-          :class="{ active: activeTab === 'users' }"
+          :class="{ active: activeTab === 'table' }"
         >
-          👤 Kelola Pengguna
+          📋 Rekap Data Laporan
         </button>
         <button 
           @click="activeTab = 'analytics'" 
@@ -169,18 +168,19 @@
           📈 Analitik & Grafik
         </button>
         <button 
-          @click="activeTab = 'table'" 
-          class="tab-btn" 
-          :class="{ active: activeTab === 'table' }"
-        >
-          📋 Rekap Data Laporan
-        </button>
-        <button 
           @click="activeTab = 'reports'" 
           class="tab-btn" 
           :class="{ active: activeTab === 'reports' }"
         >
           📄 Cetak Laporan PDF
+        </button>
+        <button 
+          v-if="!isKorlay"
+          @click="activeTab = 'users'" 
+          class="tab-btn" 
+          :class="{ active: activeTab === 'users' }"
+        >
+          👤 Kelola Pengguna
         </button>
       </div>
 
@@ -709,11 +709,7 @@ const setSessionAndLogin = (user) => {
     sessionStorage.setItem('transjateng_admin_username', user.username)
   }
 
-  if (user.role === 'Korlay') {
-    activeTab.value = 'analytics'
-  } else {
-    activeTab.value = 'users'
-  }
+  activeTab.value = 'table'
 
   loadData()
   loadUsers()
@@ -733,7 +729,7 @@ const logout = () => {
 }
 
 // Active Tab
-const activeTab = ref('users') // 'users' | 'analytics' | 'table' | 'reports'
+const activeTab = ref('table') // 'table' | 'analytics' | 'reports' | 'users'
 
 // User Management State
 const usersList = ref([])
@@ -971,11 +967,7 @@ onMounted(() => {
       currentUserRole.value = sessionStorage.getItem('transjateng_admin_role') || 'Admin'
       currentUsername.value = sessionStorage.getItem('transjateng_admin_username') || 'admin'
       
-      if (currentUserRole.value === 'Korlay') {
-        activeTab.value = 'analytics'
-      } else {
-        activeTab.value = 'users'
-      }
+      activeTab.value = 'table'
 
       loadData()
       loadUsers()
@@ -1230,24 +1222,29 @@ const generatePDFReport = async () => {
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-glass);
   background: var(--bg-secondary);
+  width: 100%;
 }
 .data-table {
   width: 100%;
+  min-width: 850px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.95rem;
 }
 .data-table th, .data-table td {
-  padding: 1rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border-glass);
+  white-space: nowrap;
 }
 .data-table th {
   background: var(--bg-tertiary);
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 .data-table tr:hover {
   background-color: rgba(255, 255, 255, 0.02);
@@ -1451,17 +1448,33 @@ const generatePDFReport = async () => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-glass);
-  padding-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  position: sticky;
+  top: -1.75rem;
+  background: var(--bg-secondary);
+  z-index: 10;
+  margin: -1.75rem -1.75rem 0 -1.75rem;
+  padding: 1.25rem 1.75rem 0.85rem 1.75rem;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
 }
 .btn-close {
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  line-height: 1;
   color: var(--text-secondary);
   cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
 }
-.btn-close:hover {
-  color: var(--text-primary);
+.btn-close:hover,
+.btn-close:active,
+.btn-close:focus {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12);
+  transform: scale(1.15);
 }
 
 .detail-grid {
@@ -1602,22 +1615,48 @@ const generatePDFReport = async () => {
   .filter-search-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
+  }
+  .select-filter {
+    width: 100%;
+    min-width: unset;
   }
 }
 
 @media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .card-header-flex {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .card-header-flex .btn {
+    width: 100%;
+  }
   .tabs-nav {
+    display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 0.35rem;
     scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.35rem;
   }
   .tabs-nav::-webkit-scrollbar {
     display: none;
   }
   .tab-btn {
     flex: 0 0 auto;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     font-size: 0.85rem;
     white-space: nowrap;
   }

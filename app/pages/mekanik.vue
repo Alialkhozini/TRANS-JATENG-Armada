@@ -950,12 +950,20 @@ const formatDateWithTime = (dateStr) => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  line-height: 1;
   color: var(--text-secondary);
   cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
 }
-.close-btn:hover {
-  color: #fff;
+.close-btn:hover,
+.close-btn:active,
+.close-btn:focus {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12);
+  transform: scale(1.15);
 }
 .modal-img-large {
   width: 100%;
