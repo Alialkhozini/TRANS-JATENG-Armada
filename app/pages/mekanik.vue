@@ -842,6 +842,9 @@ const formatDateWithTime = (dateStr) => {
   font-size: 0.95rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .media-preview-box {

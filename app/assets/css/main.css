@@ -81,6 +81,8 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   transition: background-color var(--transition-normal), color var(--transition-normal);
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(249, 115, 22, 0.04) 0%, transparent 45%),
@@ -228,6 +230,8 @@ body.light {
   border-radius: var(--radius-lg);
   padding: 2rem;
   box-shadow: var(--shadow-md);
+  overflow-wrap: anywhere;
+  word-break: break-word;
   transition: border-color var(--transition-normal), background-color var(--transition-normal);
 }
 .card:hover {

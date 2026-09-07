@@ -751,6 +751,9 @@ const formatDateWithTime = (dateStr) => {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-glass);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .report-media-section {
@@ -808,6 +811,8 @@ const formatDateWithTime = (dateStr) => {
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   border: 1px solid var(--border-glass);
   border-left-width: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .nested-status-box.success-border {
   border-left-color: var(--status-completed);
@@ -826,6 +831,9 @@ const formatDateWithTime = (dateStr) => {
   font-size: 0.85rem;
   color: var(--text-primary);
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 .media-link {
   font-size: 0.8rem;

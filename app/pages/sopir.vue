@@ -262,7 +262,10 @@
             class="btn btn-primary w-full" 
             :disabled="isSubmitting"
           >
-            <span v-if="isSubmitting" class="loader">&nbsp; Mengunggah...</span>
+            <span v-if="isSubmitting" class="btn-spinner-wrapper">
+              <span class="loader"></span>
+              <span>Mengunggah Laporan...</span>
+            </span>
             <span v-else>🚀 Kirim Laporan Kerusakan</span>
           </button>
         </form>
@@ -1070,6 +1073,9 @@ const handleSubmit = async () => {
   border-radius: var(--radius-md);
   padding: 1rem;
   margin-bottom: 1rem;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .box-label {
   font-size: 0.8rem;
@@ -1081,6 +1087,8 @@ const handleSubmit = async () => {
   color: var(--text-primary);
   margin-top: 0.25rem;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .status-box {
@@ -1287,15 +1295,21 @@ const handleSubmit = async () => {
   justify-content: center;
   margin-top: 1rem;
 }
+.btn-spinner-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+}
 .loader {
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top: 2px solid #fff;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top: 2.5px solid #ffffff;
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   animation: spin 0.8s linear infinite;
   display: inline-block;
-  vertical-align: middle;
+  flex-shrink: 0;
 }
 .loader-lg {
   border: 3px solid var(--border-glass);

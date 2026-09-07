@@ -344,19 +344,9 @@
             <h2 class="card-title">📋 Rekapitulasi Data Laporan</h2>
             <p class="text-sm text-secondary">Tabel pemantauan seluruh riwayat laporan kerusakan armada Trans Jateng.</p>
           </div>
-          <div class="table-actions-header">
-            <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
-              {{ isLoading ? '🔄 Memuat...' : '🔄 Segarkan Data' }}
-            </button>
-            <button 
-              v-if="!isKorlay && reports.length > 0" 
-              @click="handleClearAllReports" 
-              class="btn btn-danger btn-sm" 
-              :disabled="isLoading"
-            >
-              🗑️ Kosongkan Semua Laporan
-            </button>
-          </div>
+          <button @click="loadData" class="btn btn-secondary btn-sm" :disabled="isLoading">
+            {{ isLoading ? '🔄 Memuat...' : '🔄 Segarkan Data' }}
+          </button>
         </div>
 
         <!-- Filter and Search Bar -->
@@ -1470,12 +1460,16 @@ const generatePDFReport = async () => {
   padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-glass);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .detail-text {
   font-size: 0.9rem;
   color: var(--text-primary);
   margin-top: 0.25rem;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .alert-box {
   background: rgba(239, 68, 68, 0.08);
