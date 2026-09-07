@@ -64,3 +64,25 @@ CREATE POLICY "Allow public insert on photos" ON storage.objects
 -- Mengizinkan siapa saja untuk mengupdate/menghapus foto (opsional)
 CREATE POLICY "Allow public update/delete on photos" ON storage.objects
     FOR ALL TO public USING (bucket_id = 'armada-photos');
+
+-- ==========================================
+-- 3. Tabel Kredensial Pengguna (Pengguna)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.pengguna (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    pin TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('Admin', 'Operasional', 'Mekanik', 'Korlay')),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.pengguna ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read users" ON public.pengguna FOR SELECT USING (true);
+CREATE POLICY "Allow public insert users" ON public.pengguna FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update users" ON public.pengguna FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete users" ON public.pengguna FOR DELETE USING (true);
+
+-- Jika tabel pengguna sudah ada sebelumnya, jalankan query ini untuk memperbarui constraint role:
+-- ALTER TABLE public.pengguna DROP CONSTRAINT IF EXISTS pengguna_role_check;
+-- ALTER TABLE public.pengguna ADD CONSTRAINT pengguna_role_check CHECK (role IN ('Admin', 'Operasional', 'Mekanik', 'Korlay'));
