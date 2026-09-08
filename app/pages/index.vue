@@ -93,12 +93,19 @@
       </div>
 
       <!-- Wave divider SVG at bottom of hero boundary -->
+      <!-- Running Animated Parallax Wave Divider -->
       <div class="hero-wave-divider">
-        <svg viewBox="0 0 1440 100" preserveAspectRatio="none" class="wave-svg">
-          <!-- Subtle layered wave for depth -->
-          <path d="M0,25 C360,95 520,5 920,40 C1220,70 1360,20 1440,35 L1440,100 L0,100 Z" fill="var(--bg-primary)" opacity="0.35" />
-          <!-- Main crisp wave matching reference border -->
-          <path d="M0,45 C320,110 460,-15 800,30 C1100,70 1280,10 1440,35 L1440,100 L0,100 Z" fill="var(--bg-primary)" />
+        <svg class="editorial-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+          <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g class="parallax-waves">
+            <use xlink:href="#gentle-wave" x="48" y="0" class="wave-layer wave-layer-1" />
+            <use xlink:href="#gentle-wave" x="48" y="3" class="wave-layer wave-layer-2" />
+            <use xlink:href="#gentle-wave" x="48" y="5" class="wave-layer wave-layer-3" />
+            <use xlink:href="#gentle-wave" x="48" y="7" class="wave-layer wave-layer-4" />
+          </g>
         </svg>
       </div>
     </section>
@@ -518,7 +525,7 @@ const formatTimeAgo = (isoString) => {
   overflow: visible;
 }
 
-/* SVG Wave Divider at Bottom of Hero */
+/* Animated Running Wave Divider at Bottom of Hero */
 .hero-wave-divider {
   position: absolute;
   bottom: -1px;
@@ -530,11 +537,47 @@ const formatTimeAgo = (isoString) => {
   pointer-events: none;
 }
 
-.wave-svg {
+.editorial-waves {
   position: relative;
+  width: 100%;
+  height: 70px;
+  margin-bottom: -1px;
+  min-height: 50px;
+  max-height: 95px;
   display: block;
-  width: calc(100% + 1.3px);
-  height: 60px;
+}
+
+.wave-layer {
+  fill: var(--bg-primary);
+}
+
+.wave-layer-1 {
+  animation: moveWaveForever 22s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+  opacity: 0.25;
+}
+
+.wave-layer-2 {
+  animation: moveWaveForever 15s cubic-bezier(0.55, 0.5, 0.45, 0.5) -5s infinite;
+  opacity: 0.42;
+}
+
+.wave-layer-3 {
+  animation: moveWaveForever 9s cubic-bezier(0.55, 0.5, 0.45, 0.5) -2s infinite;
+  opacity: 0.68;
+}
+
+.wave-layer-4 {
+  animation: moveWaveForever 5.5s cubic-bezier(0.55, 0.5, 0.45, 0.5) -3s infinite;
+  opacity: 1;
+}
+
+@keyframes moveWaveForever {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+  }
+  100% {
+    transform: translate3d(85px, 0, 0);
+  }
 }
 
 /* Main Content Container Flow */
@@ -818,8 +861,6 @@ const formatTimeAgo = (isoString) => {
   .live-tracker-card {
     padding: 1.25rem;
   }
-  .wave-svg {
-    height: 40px;
-  }
+  .editorial-waves { height: 45px; min-height: 40px; }
 }
 </style>
