@@ -424,8 +424,8 @@
 
       <!-- Content Tab 4: Monthly PDF Report -->
       <div v-else-if="activeTab === 'reports'" class="card max-w-xl mx-auto">
-        <h2 class="card-title">📅 Cetak Laporan Bulanan</h2>
-        <p class="card-desc">Pilih bulan dan tahun untuk mengekspor rekapitulasi data kerusakan armada ke format PDF resmi.</p>
+        <h2 class="card-title">📅 Cetak Laporan Bulanan & Foto Dokumentasi</h2>
+        <p class="card-desc">Pilih bulan dan tahun untuk mengekspor rekapitulasi data kerusakan armada lengkap dengan lampiran foto bukti perbaikan ke format PDF resmi.</p>
         
         <form @submit.prevent="generatePDFReport" class="mt-4">
           <div class="form-group">
@@ -442,8 +442,23 @@
             </select>
           </div>
 
+          <!-- Pilihan Lampiran Foto -->
+          <div class="pdf-options-box mb-4">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="pdfExport.includePhotos" class="form-checkbox" />
+              <span class="font-bold">📸 Tampilkan Kolom Foto Kerusakan & Hasil Perbaikan di Tabel</span>
+            </label>
+            <p class="text-xs text-secondary mt-1 ml-6">
+              Menyertakan foto visual kondisi sebelum &amp; sesudah perbaikan langsung dalam 1 tabel di samping kolom deskripsi kerusakan.
+            </p>
+          </div>
+
           <button type="submit" class="btn btn-primary w-full" :disabled="isGeneratingPdf">
-            📥 {{ isGeneratingPdf ? 'Membuat PDF...' : 'Buat & Download PDF' }}
+            <span v-if="isGeneratingPdf" class="btn-loading-flex">
+              <span class="loader">&nbsp;</span>
+              <span>Memproses Foto & Membuat PDF...</span>
+            </span>
+            <span v-else>📥 Buat & Download Laporan PDF</span>
           </button>
         </form>
       </div>
@@ -943,7 +958,8 @@ const monthNamesShort = [
 
 const pdfExport = reactive({
   month: new Date().getMonth(),
-  year: new Date().getFullYear()
+  year: new Date().getFullYear(),
+  includePhotos: true
 })
 
 const toast = reactive({
@@ -1023,6 +1039,46 @@ const getBarHeight = (count) => {
   return (count / maxChartVal.value) * 190
 }
 
+// Helper untuk memuat gambar dari URL menjadi format Base64 yang siap dimasukkan ke jsPDF
+const loadImageAsBase64 = async (url) => {
+  if (!url) return null
+  if (typeof url === 'string' && url.startsWith('data:image/')) return url
+
+  try {
+    const response = await fetch(url, { mode: 'cors' })
+    if (!response.ok) throw new Error('Fetch failed with status ' + response.status)
+    const blob = await response.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch (err) {
+    // Fallback: Gunakan HTML Image element dan Canvas
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.crossOrigin = 'Anonymous'
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas')
+          canvas.width = img.naturalWidth || img.width
+          canvas.height = img.naturalHeight || img.height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return resolve(null)
+          ctx.drawImage(img, 0, 0)
+          resolve(canvas.toDataURL('image/jpeg', 0.85))
+        } catch {
+          resolve(null)
+        }
+      }
+      img.onerror = () => resolve(null)
+      setTimeout(() => resolve(null), 4000)
+      img.src = url
+    })
+  }
+}
+
 const generatePDFReport = async () => {
   if (isGeneratingPdf.value) return
   isGeneratingPdf.value = true
@@ -1039,108 +1095,292 @@ const generatePDFReport = async () => {
       return
     }
 
+    showToast('⏳ Sedang memproses data dan foto laporan...')
+
+    // Muat semua foto terlebih dahulu jika opsi foto diaktifkan
+    let processedReports = filtered
+    if (pdfExport.includePhotos) {
+      processedReports = await Promise.all(
+        filtered.map(async (r) => {
+          const fotoSebelumBase64 = r.foto_sebelum ? await loadImageAsBase64(r.foto_sebelum) : null
+          const fotoSesudahUrl = r.foto_hasil_perbaikan || r.foto_pasca_penanganan
+          const fotoSesudahBase64 = fotoSesudahUrl ? await loadImageAsBase64(fotoSesudahUrl) : null
+          return {
+            ...r,
+            loadedFotoSebelum: fotoSebelumBase64,
+            loadedFotoSesudah: fotoSesudahBase64
+          }
+        })
+      )
+    }
+
     const { jsPDF } = await import('jspdf')
     const { default: autoTable } = await import('jspdf-autotable')
 
-    // Gunakan format A4 Landscape (297mm x 210mm) agar tabel 8 kolom proporsional & rapi
+    // Format A4 Landscape (297mm x 210mm) untuk tabel lebar dengan foto
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
       format: 'a4'
     })
 
-    // Judul Kop Dokumen
+    // ========================================================
+    // HEADER KOP DOKUMEN RESMI
+    // ========================================================
     doc.setFont('Helvetica', 'bold')
-    doc.setFontSize(15)
+    doc.setFontSize(13)
     doc.setTextColor(15, 23, 42)
-    doc.text('LAPORAN BULANAN KERUSAKAN ARMADA TRANS JATENG', 148.5, 18, { align: 'center' })
+    doc.text('PEMERINTAH PROVINSI JAWA TENGAH - DINAS PERHUBUNGAN', 148.5, 13, { align: 'center' })
+    doc.setFontSize(12.5)
+    doc.text('LAPORAN REKAPITULASI KERUSAKAN & PERBAIKAN ARMADA TRANS JATENG', 148.5, 19, { align: 'center' })
     
     doc.setFont('Helvetica', 'normal')
-    doc.setFontSize(10.5)
+    doc.setFontSize(9.5)
     doc.setTextColor(100, 116, 139)
-    doc.text('Periode: ' + monthNames[pdfExport.month] + ' ' + pdfExport.year, 148.5, 25, { align: 'center' })
+    doc.text('Periode: ' + monthNames[pdfExport.month] + ' ' + pdfExport.year + '  |  Total Laporan: ' + filtered.length + ' Data', 148.5, 24.5, { align: 'center' })
     
-    // Garis Aksen Oranye Khas Trans Jateng
+    // Garis Aksen Oranye Trans Jateng
     doc.setDrawColor(249, 115, 22)
     doc.setLineWidth(0.8)
-    doc.line(14, 29, 283, 29)
+    doc.line(10, 27.5, 287, 27.5)
 
-    const tableBody = filtered.map((r, index) => [
-      index + 1,
-      r.id,
-      r.tanggal_kerusakan,
-      r.no_armada,
-      r.nama_sopir,
-      r.deskripsi,
-      r.nama_mekanik || 'Belum Ditugaskan',
-      r.status
-    ])
+    // ========================================================
+    // TABEL TUNGGAL REKAPITULASI LAPORAN (DENGAN KOLOM FOTO)
+    // ========================================================
+    if (pdfExport.includePhotos) {
+      // Tabel lengkap dengan 2 kolom foto tepat di samping deskripsi kerusakan
+      const tableHead = [[
+        'No',
+        'ID Laporan',
+        'Tgl Rusak',
+        'No Armada',
+        'Pelapor (Sopir)',
+        'Deskripsi Kerusakan',
+        'Foto Kerusakan (Sebelum)',
+        'Foto Hasil (Sesudah)',
+        'Mekanik',
+        'Status'
+      ]]
 
-    autoTable(doc, {
-      startY: 34,
-      margin: { left: 14, right: 14 },
-      head: [['No', 'ID Laporan', 'Tgl Rusak', 'No Armada', 'Pelapor (Sopir)', 'Deskripsi Kerusakan', 'Mekanik', 'Status']],
-      body: tableBody,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [15, 23, 42],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        fontSize: 9,
-        halign: 'center',
-        valign: 'middle',
-        cellPadding: 3
-      },
-      styles: {
-        fontSize: 8.5,
-        cellPadding: 2.5,
-        overflow: 'linebreak',
-        valign: 'middle',
-        textColor: [30, 41, 59]
-      },
-      alternateRowStyles: {
-        fillColor: [248, 250, 252]
-      },
-      columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 32, halign: 'center' },
-        2: { cellWidth: 24, halign: 'center' },
-        3: { cellWidth: 24, halign: 'center', fontStyle: 'bold' },
-        4: { cellWidth: 32 },
-        5: { cellWidth: 77 },
-        6: { cellWidth: 35 },
-        7: { cellWidth: 35, halign: 'center' }
-      }
-    })
+      const tableBody = processedReports.map((r, index) => {
+        let deskripsiContent = r.deskripsi || '-'
+        if (r.keterangan_hasil_perbaikan) {
+          deskripsiContent += '\n\nPenanganan: ' + r.keterangan_hasil_perbaikan
+        }
 
-    const lastTableY = doc.lastAutoTable?.finalY || 100
-    const finalY = lastTableY + 15
-    
-    let currentY = finalY
-    if (finalY > 165) {
-      doc.addPage()
-      currentY = 25
+        let fotoSebelumText = ''
+        if (!r.loadedFotoSebelum) {
+          fotoSebelumText = r.foto_sebelum ? '(Gagal memuat)' : '(Tidak ada foto)'
+        }
+
+        let fotoSesudahText = ''
+        const hasFotoSesudah = r.foto_hasil_perbaikan || r.foto_pasca_penanganan
+        if (!r.loadedFotoSesudah) {
+          if (hasFotoSesudah) {
+            fotoSesudahText = '(Gagal memuat)'
+          } else if (r.status === 'Selesai') {
+            fotoSesudahText = '(Tidak ada foto)'
+          } else {
+            fotoSesudahText = '(Belum selesai)'
+          }
+        }
+
+        return [
+          index + 1,
+          r.id,
+          r.tanggal_kerusakan,
+          r.no_armada,
+          r.nama_sopir,
+          deskripsiContent,
+          fotoSebelumText,
+          fotoSesudahText,
+          r.nama_mekanik || 'Belum Ditugaskan',
+          r.status
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 31,
+        margin: { left: 10, right: 10, top: 15, bottom: 15 },
+        head: tableHead,
+        body: tableBody,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 2
+        },
+        bodyStyles: {
+          fontSize: 7.5,
+          cellPadding: 2,
+          overflow: 'linebreak',
+          valign: 'middle',
+          textColor: [30, 41, 59],
+          minCellHeight: 25
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 8, halign: 'center' },
+          1: { cellWidth: 26, halign: 'center', fontSize: 7 },
+          2: { cellWidth: 18, halign: 'center', fontSize: 7.5 },
+          3: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+          4: { cellWidth: 26 },
+          5: { cellWidth: 53 },
+          6: { cellWidth: 35, halign: 'center', valign: 'middle', fontSize: 7, textColor: [148, 163, 184], fontStyle: 'italic' },
+          7: { cellWidth: 35, halign: 'center', valign: 'middle', fontSize: 7, textColor: [148, 163, 184], fontStyle: 'italic' },
+          8: { cellWidth: 26 },
+          9: { cellWidth: 32, halign: 'center', fontStyle: 'bold' }
+        },
+        didDrawCell: (data) => {
+          if (data.section === 'body') {
+            const rowIndex = data.row.index
+            const r = processedReports[rowIndex]
+            if (!r) return
+
+            // Kolom 6: Foto Sebelum (Laporan Sopir)
+            if (data.column.index === 6 && r.loadedFotoSebelum) {
+              const cell = data.cell
+              const pad = 1.5
+              const imgW = cell.width - pad * 2
+              const imgH = cell.height - pad * 2
+              try {
+                doc.addImage(r.loadedFotoSebelum, 'JPEG', cell.x + pad, cell.y + pad, imgW, imgH)
+              } catch (e) {
+                console.warn('Failed to embed before photo:', e)
+              }
+            } 
+            // Kolom 7: Foto Sesudah (Hasil Perbaikan Mekanik)
+            else if (data.column.index === 7 && r.loadedFotoSesudah) {
+              const cell = data.cell
+              const pad = 1.5
+              const imgW = cell.width - pad * 2
+              const imgH = cell.height - pad * 2
+              try {
+                doc.addImage(r.loadedFotoSesudah, 'JPEG', cell.x + pad, cell.y + pad, imgW, imgH)
+              } catch (e) {
+                console.warn('Failed to embed after photo:', e)
+              }
+            }
+          }
+        }
+      })
+    } else {
+      // Tabel standar tanpa kolom foto
+      const tableHead = [[
+        'No',
+        'ID Laporan',
+        'Tgl Rusak',
+        'No Armada',
+        'Pelapor (Sopir)',
+        'Deskripsi & Penanganan Kerusakan',
+        'Mekanik',
+        'Status'
+      ]]
+
+      const tableBody = processedReports.map((r, index) => {
+        let deskripsiContent = r.deskripsi || '-'
+        if (r.keterangan_hasil_perbaikan) {
+          deskripsiContent += '\n\nPenanganan: ' + r.keterangan_hasil_perbaikan
+        }
+        return [
+          index + 1,
+          r.id,
+          r.tanggal_kerusakan,
+          r.no_armada,
+          r.nama_sopir,
+          deskripsiContent,
+          r.nama_mekanik || 'Belum Ditugaskan',
+          r.status
+        ]
+      })
+
+      autoTable(doc, {
+        startY: 31,
+        margin: { left: 10, right: 10, top: 15, bottom: 15 },
+        head: tableHead,
+        body: tableBody,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8.5,
+          halign: 'center',
+          valign: 'middle',
+          cellPadding: 2.5
+        },
+        styles: {
+          fontSize: 8,
+          cellPadding: 2.5,
+          overflow: 'linebreak',
+          valign: 'middle',
+          textColor: [30, 41, 59]
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center' },
+          1: { cellWidth: 32, halign: 'center' },
+          2: { cellWidth: 22, halign: 'center' },
+          3: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
+          4: { cellWidth: 32 },
+          5: { cellWidth: 93 },
+          6: { cellWidth: 32 },
+          7: { cellWidth: 34, halign: 'center', fontStyle: 'bold' }
+        }
+      })
+    }
+
+    // ========================================================
+    // TANDA TANGAN & PENGESAHAN DOKUMEN
+    // ========================================================
+    const finalY = doc.lastAutoTable?.finalY || 100
+    let signY = finalY + 12
+
+    // Pindah ke halaman baru jika ruang tidak cukup untuk tanda tangan
+    if (signY > 165) {
+      doc.addPage('a4', 'landscape')
+      signY = 25
     }
 
     doc.setFont('Helvetica', 'normal')
-    doc.setFontSize(10)
+    doc.setFontSize(9)
     doc.setTextColor(30, 41, 59)
-    doc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 225, currentY, { align: 'center' })
-    doc.text('Mengetahui,', 225, currentY + 6, { align: 'center' })
-    doc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 225, currentY + 11, { align: 'center' })
+    doc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 235, signY, { align: 'center' })
+    doc.text('Mengetahui,', 235, signY + 5, { align: 'center' })
+    doc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 235, signY + 10, { align: 'center' })
     
     doc.setDrawColor(148, 163, 184)
     doc.setLineWidth(0.5)
-    doc.line(195, currentY + 30, 255, currentY + 30)
+    doc.line(205, signY + 28, 265, signY + 28)
     doc.setFont('Helvetica', 'bold')
-    doc.text('( ______________________ )', 225, currentY + 35, { align: 'center' })
+    doc.text('( ______________________ )', 235, signY + 33, { align: 'center' })
+
+    // ========================================================
+    // NOMOR HALAMAN & FOOTER DOKUMEN
+    // ========================================================
+    const totalPages = doc.getNumberOfPages()
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p)
+      doc.setFont('Helvetica', 'normal')
+      doc.setFontSize(7.5)
+      doc.setTextColor(148, 163, 184)
+      doc.text(`Trans Jateng Armada Management System  |  Halaman ${p} dari ${totalPages}`, 148.5, 204, { align: 'center' })
+    }
 
     const fileName = 'Laporan_Kerusakan_' + monthNames[pdfExport.month] + '_' + pdfExport.year + '.pdf'
     doc.save(fileName)
 
-    showToast('Laporan PDF berhasil dibuat dan diunduh!')
+    showToast('🎉 Laporan PDF lengkap dengan tabel foto berhasil dibuat dan diunduh!')
   } catch (err) {
-    console.error(err)
+    console.error('PDF Generation Error:', err)
     showToast('Gagal memproses ekspor PDF.')
   } finally {
     isGeneratingPdf.value = false
@@ -1755,4 +1995,33 @@ const generatePDFReport = async () => {
   0% { transform: scale(0.7); opacity: 0.95; }
   100% { transform: scale(2.2); opacity: 0; }
 }
+
+/* PDF Options Box */
+.pdf-options-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+.btn-loading-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
 </style>
