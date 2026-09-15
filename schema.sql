@@ -86,3 +86,14 @@ CREATE POLICY "Allow public delete users" ON public.pengguna FOR DELETE USING (t
 -- Jika tabel pengguna sudah ada sebelumnya, jalankan query ini untuk memperbarui constraint role:
 -- ALTER TABLE public.pengguna DROP CONSTRAINT IF EXISTS pengguna_role_check;
 -- ALTER TABLE public.pengguna ADD CONSTRAINT pengguna_role_check CHECK (role IN ('Admin', 'Operasional', 'Mekanik', 'Korlay'));
+
+
+-- ==========================================
+-- CONTOH SEED PENGGUNA AWAL (GANTI PIN SEBELUM DIJALANKAN)
+-- ==========================================
+-- INSERT INTO public.pengguna (id, username, pin, role) VALUES
+--   ('USR-1', 'admin', 'GANTI_PIN_ADMIN_DISINI', 'Admin'),
+--   ('USR-2', 'korlay', 'GANTI_PIN_KORLAY_DISINI', 'Korlay'),
+--   ('USR-3', 'wardana', 'GANTI_PIN_OPERASIONAL_DISINI', 'Operasional'),
+--   ('USR-4', 'aris', 'GANTI_PIN_MEKANIK_DISINI', 'Mekanik')
+-- ON CONFLICT (username) DO NOTHING;

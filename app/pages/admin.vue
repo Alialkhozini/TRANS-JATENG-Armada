@@ -208,7 +208,7 @@
               <tr v-for="user in usersList" :key="user.id">
                 <td><strong>{{ user.username }}</strong></td>
                 <td><span class="role-tag" :class="user.role.toLowerCase()">{{ user.role }}</span></td>
-                <td><code>{{ user.pin }}</code></td>
+                <td><code>{{ showPins ? user.pin : '••••••••' }}</code></td>
                 <td>
                   <div class="action-buttons-cell">
                     <button @click="openEditUserModal(user)" class="btn btn-secondary btn-sm">✏️ Edit</button>
@@ -635,7 +635,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useReports } from '~/composables/useReports'
 
-const { fetchReports, fetchUsers, createUser, updateUser, deleteUser, deleteReport, clearAllReports } = useReports()
+const { fetchReports, fetchUsers, createUser, updateUser, deleteUser, deleteReport, clearAllReports, authenticateUser } = useReports()
 
 useHead({
   title: 'Dashboard Admin & Monitoring - Trans Jateng',
@@ -652,6 +652,7 @@ const authError = ref(false)
 const authErrorMessage = ref('')
 const usernameInputRef = ref(null)
 const pinInputRef = ref(null)
+const showPins = ref(false)
 
 const currentUserRole = ref('Admin')
 const currentUsername = ref('admin')
@@ -662,45 +663,27 @@ const verifyAuth = async () => {
   authError.value = false
   authErrorMessage.value = ''
 
+  if (!pinInput.value.trim()) {
+    authError.value = true
+    authErrorMessage.value = 'Silakan masukkan PIN atau kata sandi.'
+    return
+  }
+
   try {
-    const list = await fetchUsers()
-    
-    // 1. Check if user specified a username
-    if (loginUsername.value.trim()) {
-      const uname = loginUsername.value.trim().toLowerCase()
-      const found = list.find(u => 
-        u.username.toLowerCase() === uname && 
-        u.pin === pinInput.value.trim() &&
-        (u.role === 'Admin' || u.role === 'Korlay')
-      )
-      
-      if (found) {
-        setSessionAndLogin(found)
+    // Verifikasi aman langsung ke backend auth API
+    const user = await authenticateUser(loginUsername.value, pinInput.value, 'Admin')
+    if (user && (user.role === 'Admin' || user.role === 'Korlay')) {
+      setSessionAndLogin(user)
+      return
+    }
+
+    // Jika username tidak diisi, periksa kecocokan PIN untuk Admin / Korlay
+    if (!loginUsername.value.trim()) {
+      const userByPin = await authenticateUser('', pinInput.value)
+      if (userByPin && (userByPin.role === 'Admin' || userByPin.role === 'Korlay')) {
+        setSessionAndLogin(userByPin)
         return
       }
-    }
-
-    // 2. If no username or username didn't match, check PIN / password directly
-    const inputPin = pinInput.value.trim()
-    const foundByPin = list.find(u => 
-      u.pin === inputPin && 
-      (u.role === 'Admin' || u.role === 'Korlay')
-    )
-
-    if (foundByPin) {
-      setSessionAndLogin(foundByPin)
-      return
-    }
-
-    // Direct fallback check for default credentials
-    if (inputPin === '9999' || (loginUsername.value.toLowerCase() === 'admin' && inputPin === '9999')) {
-      setSessionAndLogin({ username: 'admin', role: 'Admin' })
-      return
-    }
-
-    if (inputPin === 'password123' || (loginUsername.value.toLowerCase() === 'korlay' && inputPin === 'password123')) {
-      setSessionAndLogin({ username: 'korlay', role: 'Korlay' })
-      return
     }
 
     authError.value = true

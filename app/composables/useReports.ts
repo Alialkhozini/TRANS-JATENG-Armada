@@ -50,34 +50,18 @@ export const useReports = () => {
     return hari[date.getDay()] || 'Senin'
   }
 
-  // --- IMPLEMENTASI MOCK USER ---
+  // --- PENGELOLAAN DATA PENGGUNA (SUPABASE & BACKEND AUTH) ---
   const getMockUsers = (): User[] => {
     if (typeof window === 'undefined') return []
-
-    // Ensure Korlay user is seeded into localStorage
     const saved = localStorage.getItem('transjateng_users')
     if (saved) {
       try {
-        const parsed = JSON.parse(saved)
-        if (!parsed.some((u: User) => u.username.toLowerCase() === 'korlay')) {
-          parsed.push({ id: 'USR-6', username: 'korlay', pin: 'password123', role: 'Korlay', created_at: new Date().toISOString() })
-          localStorage.setItem('transjateng_users', JSON.stringify(parsed))
-        }
-        return parsed
+        return JSON.parse(saved)
       } catch (e) {
         console.error('Error parsing saved users:', e)
       }
     }
-    const defaultUsers: User[] = [
-      { id: 'USR-1', username: 'admin', pin: '9999', role: 'Admin', created_at: new Date().toISOString() },
-      { id: 'USR-2', username: 'wardana', pin: '1234', role: 'Operasional', created_at: new Date().toISOString() },
-      { id: 'USR-3', username: 'aris', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
-      { id: 'USR-4', username: 'daryanto', pin: '2222', role: 'Mekanik', created_at: new Date().toISOString() },
-      { id: 'USR-5', username: 'indra', pin: '1234', role: 'Operasional', created_at: new Date().toISOString() },
-      { id: 'USR-6', username: 'korlay', pin: 'password123', role: 'Korlay', created_at: new Date().toISOString() },
-    ]
-    localStorage.setItem('transjateng_users', JSON.stringify(defaultUsers))
-    return defaultUsers
+    return []
   }
 
   const saveMockUsers = (users: User[]) => {
@@ -93,12 +77,12 @@ export const useReports = () => {
     try {
       const { data, error } = await supabase
         .from('pengguna')
-        .select('*')
+        .select('id, username, role, pin, created_at')
         .order('username', { ascending: true })
       if (error) throw error
       return data || []
     } catch (err) {
-      console.warn('Error fetching users from Supabase, falling back to mock:', err)
+      console.warn('Error fetching users from Supabase, falling back to local:', err)
       return getMockUsers()
     }
   }
@@ -182,43 +166,57 @@ export const useReports = () => {
   }
 
   const authenticateUser = async (username: string, pin: string, role?: string): Promise<User | null> => {
-    const cleanUsername = username.trim().toLowerCase()
-    const cleanPin = pin.trim()
+    const cleanUsername = (username || '').trim()
+    const cleanPin = (pin || '').trim()
 
-    if (isMock.value) {
-      const list = getMockUsers()
-      const found = list.find(u =>
-        u.username.toLowerCase() === cleanUsername &&
-        u.pin === cleanPin &&
-        (!role || u.role === role)
-      )
-      return found || null
-    }
+    if (!cleanPin) return null
 
     try {
-      let query = supabase
-        .from('pengguna')
-        .select('*')
-        .eq('username', username)
-        .eq('pin', pin)
-      if (role) {
-        query = query.eq('role', role)
-      }
-      const { data, error } = await query
-      if (error) throw error
-      if (data && data.length > 0) {
-        return data[0]
+      const res = await $fetch<{ success: boolean; user?: User; message?: string }>('/api/auth/login', {
+        method: 'POST',
+        body: { username: cleanUsername, pin: cleanPin, role }
+      })
+      if (res && res.success && res.user) {
+        return res.user
       }
       return null
     } catch (err) {
-      console.warn('Error authenticating from Supabase, falling back to mock:', err)
-      const list = getMockUsers()
-      const found = list.find(u =>
-        u.username.toLowerCase() === cleanUsername &&
-        u.pin === cleanPin &&
-        (!role || u.role === role)
-      )
-      return found || null
+      console.warn('Backend login endpoint error, checking direct connection:', err)
+      if (supabase) {
+        let query = supabase.from('pengguna').select('id, username, role, pin, created_at')
+        if (cleanUsername) {
+          query = query.ilike('username', cleanUsername)
+        }
+        if (role) {
+          if (role === 'Admin' || role === 'Korlay') {
+            query = query.in('role', ['Admin', 'Korlay'])
+          } else {
+            query = query.eq('role', role)
+          }
+        }
+        const { data } = await query
+        if (data && data.length > 0) {
+          const matched = data.find((u: any) => String(u.pin).trim() === cleanPin)
+          if (matched) {
+            return {
+              id: matched.id,
+              username: matched.username,
+              role: matched.role,
+              pin: '',
+              created_at: matched.created_at || new Date().toISOString()
+            }
+          }
+        }
+      } else if (isMock.value) {
+        const list = getMockUsers()
+        const found = list.find(u =>
+          (!cleanUsername || u.username.toLowerCase() === cleanUsername.toLowerCase()) &&
+          u.pin === cleanPin &&
+          (!role || u.role === role)
+        )
+        return found || null
+      }
+      return null
     }
   }
 
