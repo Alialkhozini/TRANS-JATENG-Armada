@@ -134,10 +134,10 @@
         <div v-else class="tracker-grid">
           <div v-for="report in recentReports" :key="report.id" class="tracker-item">
             <div class="tracker-item-header">
-              <span class="tracker-bus">🚍 {{ report.nama_bus }}</span>
-              <span class="tracker-time">{{ formatTimeAgo(report.created_at) }}</span>
+              <span class="tracker-bus">🚍 <strong>{{ report.no_armada || report.nama_bus || 'Armada' }}</strong></span>
+              <span class="tracker-time">{{ formatTimeAgo(report.timestamp_lapor || report.created_at || report.tanggal_kerusakan) }}</span>
             </div>
-            <p class="tracker-desc">{{ truncateText(report.deskripsi_kerusakan, 80) }}</p>
+            <p class="tracker-desc">{{ truncateText(report.deskripsi || report.deskripsi_kerusakan || 'Laporan kerusakan armada', 80) }}</p>
             <div class="tracker-footer">
               <span :class="['badge', 'badge-mini', getStatusBadgeClass(report.status)]">
                 {{ report.status }}

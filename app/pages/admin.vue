@@ -1336,7 +1336,7 @@ const generatePDFReport = async () => {
     doc.setFont('Helvetica', 'normal')
     doc.setFontSize(9)
     doc.setTextColor(30, 41, 59)
-    doc.text('Semarang, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 235, signY, { align: 'center' })
+    doc.text('Purwokerto, ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), 235, signY, { align: 'center' })
     doc.text('Mengetahui,', 235, signY + 5, { align: 'center' })
     doc.text(isKorlay.value ? 'Koordinator Layanan Trans Jateng' : 'Kepala Operasional Trans Jateng', 235, signY + 10, { align: 'center' })
     
