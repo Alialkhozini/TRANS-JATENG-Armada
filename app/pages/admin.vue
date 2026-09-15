@@ -108,15 +108,34 @@
           </div>
           <div class="form-group text-left">
             <label class="form-label" for="loginPin">PIN / Kata Sandi</label>
-            <input 
-              v-model="pinInput" 
-              type="password" 
-              id="loginPin"
-              class="form-control" 
-              placeholder="Ketik PIN atau Sandi" 
-              required 
-              ref="pinInputRef"
-            />
+            <div class="input-with-eye">
+              <input 
+                v-model="pinInput" 
+                :type="showLoginPin ? 'text' : 'password'" 
+                id="loginPin"
+                class="form-control" 
+                placeholder="Ketik PIN atau Sandi" 
+                required 
+                ref="pinInputRef"
+              />
+              <button 
+                type="button" 
+                @click="showLoginPin = !showLoginPin" 
+                class="eye-toggle-btn"
+                :title="showLoginPin ? 'Sembunyikan Sandi' : 'Tampilkan Sandi'"
+              >
+                <svg v-if="!showLoginPin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                  <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                  <line x1="2" x2="22" y1="2" y2="22"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <p v-if="authError" class="error-text text-sm mb-4">❌ {{ authErrorMessage || 'PIN atau kredensial salah.' }}</p>
           <button type="submit" class="btn btn-primary w-full">Masuk Dashboard</button>
@@ -200,7 +219,28 @@
               <tr>
                 <th>Username</th>
                 <th>Role</th>
-                <th>PIN / Sandi</th>
+                <th>
+                  <div class="th-pin-wrapper">
+                    <span>PIN / Sandi</span>
+                    <button 
+                      type="button" 
+                      @click="toggleAllPins" 
+                      class="btn-icon-xs" 
+                      :title="isAllPinsVisible ? 'Sembunyikan Semua PIN' : 'Tampilkan Semua PIN'"
+                    >
+                      <svg v-if="!isAllPinsVisible" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" x2="22" y1="2" y2="22"/>
+                      </svg>
+                    </button>
+                  </div>
+                </th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -208,7 +248,28 @@
               <tr v-for="user in usersList" :key="user.id">
                 <td><strong>{{ user.username }}</strong></td>
                 <td><span class="role-tag" :class="user.role.toLowerCase()">{{ user.role }}</span></td>
-                <td><code>{{ showPins ? user.pin : '••••••••' }}</code></td>
+                <td>
+                  <div class="pin-cell-wrapper">
+                    <code class="pin-code">{{ visiblePins[user.id] ? user.pin : '••••••••' }}</code>
+                    <button 
+                      type="button" 
+                      @click="togglePinVisibility(user.id)" 
+                      class="btn-pin-toggle" 
+                      :title="visiblePins[user.id] ? 'Sembunyikan PIN' : 'Lihat PIN'"
+                    >
+                      <svg v-if="!visiblePins[user.id]" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" x2="22" y1="2" y2="22"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
                 <td>
                   <div class="action-buttons-cell">
                     <button @click="openEditUserModal(user)" class="btn btn-secondary btn-sm">✏️ Edit</button>
@@ -652,7 +713,26 @@ const authError = ref(false)
 const authErrorMessage = ref('')
 const usernameInputRef = ref(null)
 const pinInputRef = ref(null)
-const showPins = ref(false)
+const showLoginPin = ref(false)
+const visiblePins = ref({})
+
+const togglePinVisibility = (userId) => {
+  visiblePins.value[userId] = !visiblePins.value[userId]
+}
+
+const isAllPinsVisible = computed(() => {
+  if (!usersList.value || usersList.value.length === 0) return false
+  return usersList.value.every(u => visiblePins.value[u.id])
+})
+
+const toggleAllPins = () => {
+  const willShow = !isAllPinsVisible.value
+  const newMap = {}
+  usersList.value.forEach(u => {
+    newMap[u.id] = willShow
+  })
+  visiblePins.value = newMap
+}
 
 const currentUserRole = ref('Admin')
 const currentUsername = ref('admin')
@@ -2005,6 +2085,77 @@ const generatePDFReport = async () => {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
+}
+
+
+/* PIN show/hide eye toggle styling */
+.input-with-eye {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-eye .form-control {
+  padding-right: 2.75rem;
+}
+
+.eye-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.eye-toggle-btn:hover {
+  color: #f97316;
+}
+
+.th-pin-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pin-cell-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pin-code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.btn-pin-toggle,
+.btn-icon-xs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: var(--text-secondary, #94a3b8);
+  padding: 0.25rem 0.35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pin-toggle:hover,
+.btn-icon-xs:hover {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.5);
+  color: #f97316;
+  transform: scale(1.08);
 }
 
 </style>
